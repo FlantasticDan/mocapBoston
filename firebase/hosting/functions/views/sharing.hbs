@@ -7,16 +7,17 @@
         <!-- Open Graph / Social Meta -->
         <meta property="og:site_name" content="mocapBoston">
         <meta property="og:title" content="Motion Capture Performance">
-        <meta property="og:description" content="Check out this 3D motion capture performance create at mocapBoston!">
-        <meta property="og:url" content="https://mocap.boston/share/0A9F">
-        <meta property="og:image" content="https://media.giphy.com/media/Vewuc10rHBqkXlO6fw/giphy.gif">
-        <meta property="og:image:secure_url" content="https://media.giphy.com/media/Vewuc10rHBqkXlO6fw/giphy.gif">
-        <meta property="og:image:type" content="image/gif">
-        <meta property="og:image:width" content="480">
-        <meta property="og:image:height" content="270">
-        <meta property="twitter:card" content="player">
-        <meta property="twitter:player:width" content="480">
-        <meta property="twitter:player:height" content="270">
+        <meta property="og:description" content="Check out this 3D motion capture performance created at mocapBoston!">
+        <meta property="og:url" content="https://mocap.boston/share/{{id}}">
+        <meta property="fb:app_id" content="2275639242540793">
+        <meta property="og:image" content="https://mocap.boston/branding/16x9Brand.jpg">
+        <meta property="og:image:secure_url" content="https://mocap.boston/branding/16x9Brand.jpg">
+        <meta property="og:image:type" content="image/jpeg">
+        <meta property="og:image:width" content="1920">
+        <meta property="og:image:height" content="1080">
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:image" content="https://mocap.boston/branding/twitterBrand.jpg">
+        <meta property="snapchat:sticker" content="https://mocap.boston/branding/snapchatSticker.png">
 
 
         <title>mocapBoston Capture</title>
@@ -72,14 +73,18 @@
 
         <div class="ui container" style="padding-top: 25px;">
             <div class="ui stackable three column grid">
-                <div class="column">
-                    
+                <div class="column" style="text-align: center;">
+                    <div class="snapchat-creative-kit-share" data-size=large style="display: inline-block;" data-share-url="https://mocap.boston/share/{{id}}"></div>
                 </div>
-                <div class="column">
-                    
+                <div class="column" style="text-align: center;">
+                    <a href="https://twitter.com/intent/tweet?text=Take%20a%20look%20at%20this%20motion%20capture%20performance%21&url=https://mocap.boston/share/{{id}}" class="twitter-share-button" data-size="large" data-show-count="false">Tweet</a>
                 </div>
-                <div class="column">
-                    
+                <div class="column" style="text-align: center;">
+                    <div class="fb-share-button" data-href="https://mocap.boston/share/{{id}}" data-layout="button" data-size="large">
+                        <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fmocap.boston%2Fshare%2F{{id}}&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">
+                            Share
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,7 +93,7 @@
             <div class="ui container">
                 <div class="ui stackable three column grid">
                     <div class="column" style="height: 70px; display: block;">
-                            <img src="/branding/Dan.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
+                        <img src="/branding/Dan.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
                     </div>
                     <div class="column" style="height: 70px;">
                         <img src="/branding/Built_with_Firebase_Logo_Knockout.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
@@ -111,6 +116,13 @@
                 sjs.parentNode.insertBefore(js, sjs);
             }(document, 'script', 'snapkit-creative-kit-sdk'));
         </script>
+
+        <!-- Twitter Share Integration -->
+        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+        <!-- Facebook Share Integration -->
+        <div id="fb-root"></div>
+        <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&autoLogAppEvents=1&version=v5.0&appId=2275639242540793"></script>
 
         <!-- The core Firebase JS SDK is always required and must be listed first -->
         <script src="/__/firebase/7.3.0/firebase-app.js"></script>
