@@ -14,6 +14,14 @@
       {
         "source": "/share/**",
         "function":"sharing"
+      },
+      {
+        "source": "/keep/**",
+        "function":"keepPrivate"
+      },
+      {
+        "source": "/add/**",
+        "function":"addGallery"
       }
     ]
   },
