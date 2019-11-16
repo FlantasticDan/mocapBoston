@@ -66,3 +66,7 @@ function getAllUrlParams(url) {
     if (getAllUrlParams().invalid){
         document.getElementById("invalidID").className = "ui red message";
     }
+
+    if (getAllUrlParams().servererror){
+        document.getElementById("serverError").className = "ui blue message";
+    }
