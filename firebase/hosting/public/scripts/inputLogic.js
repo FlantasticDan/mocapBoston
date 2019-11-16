@@ -38,7 +38,7 @@ input04.onkeyup = function(q) {
 }
 
 button.onclick = function() {
-    var base = "https://mocap.boston/onboard/";
+    var base = "/onboard/";
     base += input01.value;
     base += input02.value;
     base += input03.value;

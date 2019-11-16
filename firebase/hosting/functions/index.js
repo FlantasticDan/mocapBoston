@@ -1,19 +1,13 @@
+const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 const express = require('express');
 const engines = require('consolidate');
 
-// exports.onboarding = functions.https.onRequest((req, res) => {
-//     const source = req.url;
-//     const id = source.split('/')[2];
-//     res.status(200).send(`<!doctype html>
-//       <head>
-//         <title>Onboarding</title>
-//       </head>
-//       <body>
-//         <h1>${id}</h1>
-//       </body>
-//     </html>`);
-//   });
+// Configure Firestore
+admin.initializeApp(functions.config().firebase);
+
+let db = admin.firestore();
+
 
 
 // Configure Express
@@ -25,8 +19,25 @@ app.set('view engine', 'hbs');
 
 // Express Function
 app.get('/onboard/*', (request, response) => {
-    const onboardID = request.url.split('/')[2]
-    response.render('onboarding', {id: onboardID})
+    const sessionID = request.url.split('/')[2];
+
+    // Check for Session ID in Firestore
+    let sessionReference = db.collection('dev').doc(sessionID);
+    console.log(sessionReference);
+    let sessionDoc = sessionReference.get()
+        .then(doc => {
+            // eslint-disable-next-line promise/always-return
+            if (!doc.exists) {
+                response.redirect('/?invalid');
+            } else {
+                response.render('onboarding', {id: sessionID});
+            }
+        })
+        .catch(error =>{
+            console.log("Session ID " + sessionID + " returned an error:");
+            console.log(error);
+            response.redirect('/?serverError');
+        });
 });
 
 // Firebase Cloud Function Declaration
