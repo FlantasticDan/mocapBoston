@@ -19,7 +19,8 @@
 
         <div style="display: flex; justify-content: center; align-content: center; height: 100%; flex-wrap: wrap;">
             <div class="ui secondary inverted segment" style="margin: 25px; border-radius: 0.65rem; background-color: #353535;">
-                <h1 class="ui center aligned header">mocapBoston</h1>
+                <div id="invalidID" class="ui hidden red message" style="margin-bottom: 5px; text-align: center;">That Session ID doesn't exist.</div>
+                <h1 class="ui center aligned header" style="margin-top: 0px;">mocapBoston</h1>
                 <img src="branding/markers.png" style="max-width: 300px; width: 100%; height: auto; object-fit: contain;">
                 <div class="ui massive form">
                     <h4 style="text-align: center; margin-bottom: 0px; margin-top: 5px; color: white;">Enter Session ID</h4>
@@ -43,6 +44,8 @@
         </div>
 
         <script src="scripts/inputLogic.js"></script>
+
+        <script src="scripts/invalidSessionID.js"></script>
 
     </body>
 </html>
