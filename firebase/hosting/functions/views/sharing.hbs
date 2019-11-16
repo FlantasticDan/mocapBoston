@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+    <header>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+        <!-- Open Graph / Social Meta -->
+        <meta property="og:site_name" content="mocapBoston">
+        <meta property="og:title" content="Motion Capture Performance">
+        <meta property="og:description" content="Check out this 3D motion capture performance create at mocapBoston!">
+        <meta property="og:url" content="https://mocap.boston/share/0A9F">
+        <meta property="og:image" content="https://media.giphy.com/media/Vewuc10rHBqkXlO6fw/giphy.gif">
+        <meta property="og:image:secure_url" content="https://media.giphy.com/media/Vewuc10rHBqkXlO6fw/giphy.gif">
+        <meta property="og:image:type" content="image/gif">
+        <meta property="og:image:width" content="480">
+        <meta property="og:image:height" content="270">
+        <meta property="twitter:card" content="player">
+        <meta property="twitter:player:width" content="480">
+        <meta property="twitter:player:height" content="270">
+
+
+        <title>mocapBoston Capture</title>
+
+        <!-- Semantic UI Integration -->
+        <link rel="stylesheet" type="text/css" href="/semantic/semantic.min.css">
+        <script
+            src="https://code.jquery.com/jquery-3.1.1.min.js"
+            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+            crossorigin="anonymous"></script>
+        <script src="/semantic/semantic.min.js"></script>
+    </header>
+    <body>
+        <div style="background-color: #0D0A0B; padding-top: 25px; padding-bottom: 25px;">
+            <div class="ui main container">
+                <h1 class="ui center aligned inverted header">mocapBoston</h1>
+            
+                <!-- Gif Placeholder -->
+                <div class="ui black inverted segment" style="max-width: 960px; margin: auto;">
+                    <div style="overflow: hidden; padding-top: 56.25%; position: relative;">
+                        <video autoplay loop style="border: 0; height: 100%; left: 0; position: absolute; top: 0; width: 100%;" muted preload="auto">
+                            <source src="https://i.giphy.com/media/Vewuc10rHBqkXlO6fw/source.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+
+                <!-- Session ID Segment Sample -->
+                <div class="ui segment" style="width: max-content; margin: auto; margin-top: 10px;">
+                    <div class="ui mini statistic">
+                        <div class="value">
+                            {{id}}
+                        </div>
+                        <div class="label">
+                            Session ID
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="ui container" style="padding-top: 25px;">
+            <!-- Welcome Prompt -->
+            <div class="ui raised top attached header segment">
+                <h3>What is mocapBoston?</h3>
+            </div>
+            <div class="ui raised red attached segment">
+                mocapBoston is a motion capture installation in Boston, MA at Emerson College developed by Daniel Flanagan.  
+                The installation allows participants to create an animation of their performance by wearing computer-vision enabled stickers which are processed 
+                in near-realtime by an algorithm developed for this project which has since been made avaialable open-source.
+            </div>
+        </div>
+
+        <div class="ui container" style="padding-top: 25px;">
+            <div class="ui stackable three column grid">
+                <div class="column">
+                    
+                </div>
+                <div class="column">
+                    
+                </div>
+                <div class="column">
+                    
+                </div>
+            </div>
+        </div>
+
+        <div style="background-color: #0D0A0B; padding-top: 25px; padding-bottom: 25px; margin-top: 25px;">
+            <div class="ui container">
+                <div class="ui stackable three column grid">
+                    <div class="column" style="height: 70px; display: block;">
+                            <img src="/branding/Dan.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
+                    </div>
+                    <div class="column" style="height: 70px;">
+                        <img src="/branding/Built_with_Firebase_Logo_Knockout.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
+                    </div>
+                    <div class="column" style="height: 70px;">
+                        <img src="/branding/Poweredby_640px-Black_VertLogo.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Snapchat Share Integration -->
+        <script>
+            // Load the SDK asynchronously
+            (function (d, s, id) {
+                var js, sjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s); js.id = id;
+                js.src = "https://sdk.snapkit.com/js/v1/create.js";
+                sjs.parentNode.insertBefore(js, sjs);
+            }(document, 'script', 'snapkit-creative-kit-sdk'));
+        </script>
+
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+        <script src="/__/firebase/7.3.0/firebase-app.js"></script>
+
+        <!-- TODO: Add SDKs for Firebase products that you want to use
+            https://firebase.google.com/docs/web/setup#available-libraries -->
+        <script src="/__/firebase/7.3.0/firebase-analytics.js"></script>
+
+        <!-- Initialize Firebase -->
+        <script src="/__/firebase/init.js"></script>
+    </body>
+
+
+
+</html>

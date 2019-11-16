@@ -10,6 +10,10 @@
       {
         "source": "/onboard/**",
         "function": "onboarding"
+      },
+      {
+        "source": "/share/**",
+        "function":"sharing"
       }
     ]
   },

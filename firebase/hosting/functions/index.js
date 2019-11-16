@@ -17,13 +17,12 @@ app.set('views', './views');
 app.set('view engine', 'hbs');
 
 
-// Express Function
+// Express Functions
 app.get('/onboard/*', (request, response) => {
     const sessionID = request.url.split('/')[2];
 
     // Check for Session ID in Firestore
     let sessionReference = db.collection('dev').doc(sessionID);
-    console.log(sessionReference);
     let sessionDoc = sessionReference.get()
         .then(doc => {
             // eslint-disable-next-line promise/always-return
@@ -40,5 +39,11 @@ app.get('/onboard/*', (request, response) => {
         });
 });
 
+app.get('/share/*', (request, response) => {
+    const sessionID = request.url.split('/')[2];
+    response.render('sharing', {id: sessionID});
+});
+
 // Firebase Cloud Function Declaration
-exports.onboarding = functions.https.onRequest(app)
+exports.onboarding = functions.https.onRequest(app);
+exports.sharing = functions.https.onRequest(app);
