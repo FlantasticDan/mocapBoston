@@ -78,18 +78,51 @@
         </div>
 
         <div class="ui container" style="padding-top: 25px;">
-            <div class="ui stackable three column grid">
-                <div class="column" style="text-align: center;">
-                    <div class="snapchat-creative-kit-share" data-size=large style="display: inline-block;" data-share-url="https://mocap.boston/share/{{id}}"></div>
+            <div class="ui stackable two column grid">
+                <div class="column">
+                    <div class="ui three column grid">
+                        <div class="column" style="text-align: center;">
+                            <div class="snapchat-creative-kit-share" data-size=large style="display: inline-block;" data-share-url="https://mocap.boston/share/{{id}}"></div>
+                        </div>
+                        <div class="column" style="text-align: center;">
+                            <a href="https://twitter.com/intent/tweet?text=Take%20a%20look%20at%20this%20motion%20capture%20performance%21&url=https://mocap.boston/share/{{id}}" class="twitter-share-button" data-size="large" data-show-count="false">Tweet</a>
+                        </div>
+                        <div class="column" style="text-align: center;">
+                            <div class="fb-share-button" data-href="https://mocap.boston/share/{{id}}" data-layout="button" data-size="large">
+                                <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fmocap.boston%2Fshare%2F{{id}}&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">
+                                    Share
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="column" style="text-align: center;">
-                    <a href="https://twitter.com/intent/tweet?text=Take%20a%20look%20at%20this%20motion%20capture%20performance%21&url=https://mocap.boston/share/{{id}}" class="twitter-share-button" data-size="large" data-show-count="false">Tweet</a>
-                </div>
-                <div class="column" style="text-align: center;">
-                    <div class="fb-share-button" data-href="https://mocap.boston/share/{{id}}" data-layout="button" data-size="large">
-                        <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fmocap.boston%2Fshare%2F{{id}}&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">
-                            Share
-                        </a>
+                <div class="column">
+                    <div class="ui three column grid">
+                        <div class="column" style="text-align: center;">
+                            <button id="giphyButton" class="ui black button" style="width: 80px; height: 28px; padding: 0;">
+                                <div style="width:fit-content; width: -moz-fit-content; display: flex; vertical-align: middle; height: 28px; margin: 0 auto; text-align: center;">
+                                    <img src="/branding/giphy-logo.png" height="20px" width="auto" style="float:left; margin:auto 0;">
+                                    <p style="margin-top: auto; margin-bottom: auto; margin-left: 3px;">Share</p>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="column" style="text-align: center;">
+                            <a href="https://i.giphy.com/media/{{gifID}}/giphy.webp" download="mocapBoston.webp">
+                            <button id="download" class="ui red button" style="width: 105px; height: 28px; padding: 0;">
+                                <div style="width:fit-content; width: -moz-fit-content; display: flex; vertical-align: middle; height: 28px; margin: 0 auto; text-align: center;">
+                                    <img src="/icons/download.png" height="13px" width="auto" style="float:left; margin:auto 0;">
+                                    <p style="margin-top: auto; margin-bottom: auto; margin-left: 5px;">Download</p>
+                                </div>
+                            </button></a>
+                        </div>
+                        <div class="column" style="text-align: center;">
+                            <button id="copy" class="ui green button" style="width: 105px; height: 28px; padding: 0;">
+                                <div style="width:fit-content; width: -moz-fit-content; display: flex; vertical-align: middle; height: 28px; margin: 0 auto; text-align: center;">
+                                    <img src="/icons/link.png" height="13px" width="auto" style="float:left; margin:auto 0;">
+                                    <p style="margin-top: auto; margin-bottom: auto; margin-left: 5px;">Copy Link</p>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -110,6 +143,42 @@
                 </div>
             </div>
         </div>
+
+        {{!-- Share Button On Click Interactions --}}
+        <script>
+            const giphy = document.getElementById("giphyButton");
+            const copy = document.getElementById("copy");
+
+            giphy.onclick = function() {
+                window.location.href = "https://giphy.com/gifs/{{gifID}}";
+            };
+
+            const copyToClipboard = str => {
+                const el = document.createElement('textarea');
+                el.value = "https://mocap.boston/share/{{id}}";
+                el.setAttribute('readonly', '');
+                el.style.position = 'absolute';
+                el.style.left = '-9999px';
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                };
+            
+            copy.onclick = function () {
+                const el = document.createElement('textarea');
+                el.value = "https://mocap.boston/share/{{id}}";
+                el.setAttribute('readonly', '');
+                el.style.position = 'absolute';
+                el.style.left = '-9999px';
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                };
+
+
+        </script>
 
         <!-- Snapchat Share Integration -->
         <script>
@@ -141,6 +210,7 @@
         <!-- Initialize Firebase -->
         <script src="/__/firebase/init.js"></script>
 
+        {{!-- Firebase Auto Update GIF on Processing Finish --}}
         <script>
             const hasProcessed = {{processed}};
 
