@@ -19,7 +19,7 @@ app.set('view engine', 'hbs');
 
 // Express Functions
 app.get('/onboard/*', (request, response) => {
-    const sessionID = request.url.split('/')[2];
+    const sessionID = request.url.split('/')[2].toLowerCase();
 
     // Check for Session ID in Firestore
     let sessionReference = db.collection('dev').doc(sessionID);
@@ -47,7 +47,7 @@ app.get('/onboard/*', (request, response) => {
 });
 
 app.get('/share/*', (request, response) => {
-    const sessionID = request.url.split('/')[2];
+    const sessionID = request.url.split('/')[2].toLowerCase();
     let sessionReference = db.collection('dev').doc(sessionID);
     let sessionDoc = sessionReference.get()
         .then(doc => {
@@ -68,7 +68,7 @@ app.get('/share/*', (request, response) => {
 });
 
 app.get('/keep/*', (request, response) => {
-    const sessionID = request.url.split('/')[2];
+    const sessionID = request.url.split('/')[2].toLowerCase();
     let sessionReference = db.collection('dev').doc(sessionID);
     let sessionDoc = sessionReference.get()
         .then(doc => {
@@ -90,7 +90,7 @@ app.get('/keep/*', (request, response) => {
 });
 
 app.get('/add/*', (request, response) => {
-    const sessionID = request.url.split('/')[2];
+    const sessionID = request.url.split('/')[2].toLowerCase();
     let sessionReference = db.collection('dev').doc(sessionID);
     let sessionDoc = sessionReference.get()
         .then(doc => {
