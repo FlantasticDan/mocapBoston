@@ -30,7 +30,9 @@ app.get('/onboard/*', (request, response) => {
                 response.redirect('/?invalid');
             } else {
                 if (!doc.get("shareAnswer")) {
-                    response.render('onboarding', {id: sessionID});
+                    const process = doc.get('processed');
+                    const gif = doc.get('gifID');
+                    response.render('onboarding', { id: sessionID, gifID: gif, processed: process });
                 } else {
                     response.redirect("/share/" + sessionID);
                 }
@@ -46,7 +48,23 @@ app.get('/onboard/*', (request, response) => {
 
 app.get('/share/*', (request, response) => {
     const sessionID = request.url.split('/')[2];
-    response.render('sharing', {id: sessionID});
+    let sessionReference = db.collection('dev').doc(sessionID);
+    let sessionDoc = sessionReference.get()
+        .then(doc => {
+            // eslint-disable-next-line promise/always-return
+            if (!doc.exists) {
+                response.redirect('/?invalid');
+            } else {
+                const process = doc.get('processed');
+                const gif = doc.get('gifID');
+                response.render('sharing', { id: sessionID, gifID: gif, processed: process });
+            }
+        })
+        .catch(error =>{
+            console.log("Session ID " + sessionID + " returned an error @ sharing:");
+            console.log(error);
+            response.redirect('/?serverError');
+        });
 });
 
 app.get('/keep/*', (request, response) => {
