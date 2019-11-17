@@ -8,7 +8,7 @@
         <meta property="og:site_name" content="mocapBoston">
         <meta property="og:title" content="Motion Capture Performance">
         <meta property="og:description" content="Check out this 3D motion capture performance created at mocapBoston!">
-        <meta property="og:url" content="https://mocap.boston/share/{{id}}">
+        <meta property="og:url" content="https://mocap.boston/share/0A9F">
         <meta property="fb:app_id" content="2275639242540793">
         <meta property="og:image" content="https://mocap.boston/branding/facebookBrand.jpg">
         <meta property="og:image:secure_url" content="https://mocap.boston/branding/facebookBrand.jpg">
@@ -17,8 +17,8 @@
         <meta property="og:image:height" content="1006">
         <meta property="twitter:card" content="summary_large_image">
         <meta property="twitter:image" content="https://mocap.boston/branding/twitterBrand.jpg">
-        <meta property="snapchat:sticker" content="https://mocap.boston/branding/snapchatSticker_v2.webp (https://mocap.boston/branding/snapchatSticker_v2.gif)">
-        
+        <meta property="snapchat:sticker" content="https://mocap.boston/branding/snapchatSticker_v2-cropped">
+
         <!-- Favicon -->
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -45,7 +45,7 @@
                 <div class="ui black inverted segment" style="max-width: 960px; margin: auto;">
                     <div style="overflow: hidden; padding-top: 56.25%; position: relative;">
                         <video autoplay loop style="border: 0; height: 100%; left: 0; position: absolute; top: 0; width: 100%;" muted preload="auto">
-                            <source src="https://i.giphy.com/media/{{gifID}}/source.mp4" type="video/mp4">
+                            <source id= "playerSource" src="https://i.giphy.com/media/{{gifID}}/source.mp4" type="video/mp4">
                         </video>
                     </div>
                 </div>
@@ -136,16 +136,27 @@
         <!-- TODO: Add SDKs for Firebase products that you want to use
             https://firebase.google.com/docs/web/setup#available-libraries -->
         <script src="/__/firebase/7.3.0/firebase-analytics.js"></script>
+        <script src="/__/firebase/7.4.0/firebase-firestore.js"></script>
 
         <!-- Initialize Firebase -->
         <script src="/__/firebase/init.js"></script>
 
         <script>
             const hasProcessed = {{processed}};
+
+            if (!hasProcessed) {
+                const gifPlayer = document.getElementById("playerSource");
+                var db = firebase.firestore();
+
+                var unsubscribe = db.collection("dev").doc("{{id}}")
+                    .onSnapshot(function (doc){
+                        if (doc.get("processed")) {
+                            location.reload();
+                        }
+                    });
+            }
         </script>
 
     </body>
-
-
 
 </html>

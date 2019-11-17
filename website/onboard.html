@@ -28,7 +28,7 @@
                 <div class="ui black inverted segment" style="max-width: 960px; margin: auto;">
                     <div style="overflow: hidden; padding-top: 56.25%; position: relative;">
                         <video autoplay loop style="border: 0; height: 100%; left: 0; position: absolute; top: 0; width: 100%;" muted preload="auto">
-                            <source src="https://i.giphy.com/media/Vewuc10rHBqkXlO6fw/source.mp4" type="video/mp4">
+                            <source id="playerSource" src="https://i.giphy.com/media/{{gifID}}/source.mp4" type="video/mp4">
                         </video>
                     </div>
                 </div>
@@ -37,7 +37,7 @@
                 <div class="ui segment" style="width: max-content; margin: auto; margin-top: 10px;">
                     <div class="ui mini statistic">
                         <div class="value">
-                            0A9F
+                            {{id}}
                         </div>
                         <div class="label">
                             Session ID
@@ -102,13 +102,27 @@
                             Given your permission below, your performace will be added to the mocapBoston Gallery.  
                             Either way you will be redirected to the dedicated sharing page for your performace.
                         </p>
-                        <button class="fluid ui inverted green button">Add to Gallery</button>
+                        <button class="fluid ui inverted green button" id="addGallery">Add to Gallery</button>
                         <div class="ui divider"></div>
-                        <button class="fluid ui inverted red button">Keep Private</button>
+                        <button class="fluid ui inverted red button" id="keepPrivate">Keep Private</button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <script>
+            // Button Functions
+            const addButton = document.getElementById("addGallery");
+            const keepButton = document.getElementById("keepPrivate");
+
+            addButton.onclick = function() {
+                window.location.href = "https://mocap.boston/add/{{id}}";
+            };
+
+            keepButton.onclick = function () {
+                window.location.href = "https://mocap.boston/keep/{{id}}"
+            };
+        </script>
 
         <div style="background-color: #0D0A0B; padding-top: 25px; padding-bottom: 25px; margin-top: 25px;">
             <div class="ui container">
@@ -133,12 +147,25 @@
         <!-- TODO: Add SDKs for Firebase products that you want to use
             https://firebase.google.com/docs/web/setup#available-libraries -->
         <script src="/__/firebase/7.3.0/firebase-analytics.js"></script>
+        <script src="/__/firebase/7.4.0/firebase-firestore.js"></script>
 
         <!-- Initialize Firebase -->
         <script src="/__/firebase/init.js"></script>
 
         <script>
-            const hasProcessed = false;
+            const hasProcessed = {{processed}};
+
+            if (!hasProcessed) {
+                const gifPlayer = document.getElementById("playerSource");
+                var db = firebase.firestore();
+
+                var unsubscribe = db.collection("dev").doc("{{id}}")
+                    .onSnapshot(function (doc){
+                        if (doc.get("processed")) {
+                            location.reload();
+                        }
+                    });
+            }
         </script>
 
     </body>
