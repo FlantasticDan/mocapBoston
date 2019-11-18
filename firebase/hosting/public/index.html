@@ -35,7 +35,7 @@
 
     <body style="background-color: #0D0A0B; height: 100%;">
 
-        <div style="display: flex; justify-content: center; align-content: center; height: 100%; flex-wrap: wrap;">
+        <div style="display: grid; justify-content: center; align-content: center; height: 100%;">
             <div class="ui secondary inverted segment" style="margin: 25px; border-radius: 0.65rem; background-color: #353535;">
                 <div id="invalidID" class="ui hidden red message" style="margin-bottom: 5px; text-align: center;">That Session ID doesn't exist.</div>
                 <div id="serverError" class="ui hidden blue message" style="margin-bottom: 5px; text-align: center; max-width: 300px;">The server reported an unknown error, try again in a momment.</div>
@@ -61,6 +61,10 @@
                 </div>
             </div>
         </div>
+        
+        <footer style="text-align: center; position: fixed; left: 0; bottom: 0; width: 100%; padding: 10px;">
+            <img src="/branding/dan-19.png" style="margin: auto; width: auto; height: 50px; display: block;">
+        </footer>
 
         <script src="/scripts/inputLogic.js"></script>
 
