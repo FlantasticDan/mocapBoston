@@ -17,7 +17,7 @@
         <meta property="og:image:height" content="1006">
         <meta property="twitter:card" content="summary_large_image">
         <meta property="twitter:image" content="https://mocap.boston/branding/twitterBrand.jpg">
-        <meta property="snapchat:sticker" content="https://mocap.boston/branding/snapchatSticker_v2-cropped">
+        <meta property="snapchat:sticker" content="https://mocap.boston/branding/snapchatSticker_v2-cropped.png">
 
         <!-- Favicon -->
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -37,7 +37,14 @@
 
     </header>
     <body>
+        <div style="width: 100%; background-color: rgb(163, 163, 163);{{private}}">
+            <div style="width:fit-content; width: -moz-fit-content; display: flex; vertical-align: middle; height: 28px; margin: 0 auto; text-align: center;">
+                <img src="/icons/lock.svg" height="15px" width="auto" style="float:left; margin:auto 0;">
+                <p style="margin-top: auto; margin-bottom: auto; margin-left: 5px;"><b>This capture is private.</b></p>
+            </div>
+        </div>
         <div style="background-color: #0D0A0B; padding-top: 25px; padding-bottom: 25px;">
+            
             <div class="ui main container">
                 <h1 class="ui center aligned inverted header">mocapBoston</h1>
             
@@ -119,7 +126,7 @@
                             <button id="copy" class="ui green button" style="width: 105px; height: 28px; padding: 0;">
                                 <div style="width:fit-content; width: -moz-fit-content; display: flex; vertical-align: middle; height: 28px; margin: 0 auto; text-align: center;">
                                     <img src="/icons/link.png" height="13px" width="auto" style="float:left; margin:auto 0;">
-                                    <p style="margin-top: auto; margin-bottom: auto; margin-left: 5px;">Copy Link</p>
+                                    <p id="copytxt" style="margin-top: auto; margin-bottom: auto; margin-left: 5px;">Copy Link</p>
                                 </div>
                             </button>
                         </div>
@@ -132,7 +139,7 @@
             <div class="ui container">
                 <div class="ui stackable three column grid">
                     <div class="column" style="height: 70px; display: block;">
-                        <img src="/branding/Dan.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
+                        <img src="/branding/dan-19.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
                     </div>
                     <div class="column" style="height: 70px;">
                         <img src="/branding/Built_with_Firebase_Logo_Knockout.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
@@ -175,6 +182,8 @@
                 el.select();
                 document.execCommand('copy');
                 document.body.removeChild(el);
+                document.getElementById("copytxt").textContent = "Link Copied";
+                copy.className = "ui olive button";
                 };
 
 

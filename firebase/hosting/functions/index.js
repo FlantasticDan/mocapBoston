@@ -57,7 +57,11 @@ app.get('/share/*', (request, response) => {
             } else {
                 const process = doc.get('processed');
                 const gif = doc.get('gifID');
-                response.render('sharing', { id: sessionID, gifID: gif, processed: process });
+                var private = "";
+                if (doc.get('galleryVisible')) {
+                    private = " display: none;";
+                }
+                response.render('sharing', { id: sessionID, gifID: gif, processed: process, private: private });
             }
         })
         .catch(error =>{
