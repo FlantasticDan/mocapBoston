@@ -13,8 +13,7 @@ MAX_RECORDING = 35
 
 class FrameBuffer(object):
     def __init__(self, resolution):
-        self.manager = multiprocessing.Manager()
-        self.buffer = self.manager.list()
+        self.buffer = []
         self.resolution = resolution
     
     def __iter__(self):
@@ -32,6 +31,12 @@ class FrameBuffer(object):
 
     def flush(self):
         self.frameCount = len(self.buffer)
+        self.manager = multiprocessing.Manager()
+        self.pool = self.manager.list(self.buffer)
+        del self.buffer
+    
+    def close(self):
+        self.manager.shutdown()
 
 def raw_resolution(splitter=False):
     """
@@ -109,7 +114,7 @@ def buffer2bgr(frame):
 
 def findMarker(bufferIndex):
     """Multiprocessing Core for Marker Identification"""
-    image = buffer2bgr(f.buffer[bufferIndex])
+    image = buffer2bgr(f.pool[bufferIndex])
     return md.markerID(image)
 
 if __name__ == "__main__":
@@ -139,6 +144,7 @@ if __name__ == "__main__":
     pool = multiprocessing.Pool()
     mocap = pool.map(findMarker, f, chunksize=round(f.frameCount / 4))
     pool.close()
+    f.close()
 
 
 # ## DEBUG ##
