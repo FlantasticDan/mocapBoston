@@ -13,23 +13,25 @@ MAX_RECORDING = 35
 
 class FrameBuffer(object):
     def __init__(self, resolution):
-        self.buffer = []
+        self.manager = multiprocessing.Manager()
+        self.buffer = self.manager.list()
         self.resolution = resolution
     
     def __iter__(self):
+        self.iterationCount = -1
         return self
     
     def __next__(self):
-        if len(self.buffer) > 0:
-            gc.collect()
-            return self.buffer.pop(0)
+        self.iterationCount += 1
+        if self.iterationCount < self.frameCount:
+            return self.iterationCount
         raise StopIteration
 
     def write(self, sensorOutput):
         self.buffer.append(sensorOutput)
 
     def flush(self):
-        return None
+        self.frameCount = len(self.buffer)
 
 def raw_resolution(splitter=False):
     """
@@ -105,37 +107,38 @@ def buffer2bgr(frame):
     image = cv2.cvtColor(rgbImage, cv2.COLOR_RGB2BGR)
     return image
 
-def findMarker(buffer):
+def findMarker(bufferIndex):
     """Multiprocessing Core for Marker Identification"""
-    image = buffer2bgr(buffer)
+    image = buffer2bgr(f.buffer[bufferIndex])
     return md.markerID(image)
 
-# Camera Setup
-camera = picamera.PiCamera()
-camera.resolution = RESOLUTION
-camera.framerate = 24
-camera.iso = 1600
-camera.shutter_speed = 2000
-# camera.awb_mode = 'off'
-# camera.awb_gains = (1.5,1.5)
- 
-f = FrameBuffer(RESOLUTION)
+if __name__ == "__main__":
+    # Camera Setup
+    camera = picamera.PiCamera()
+    camera.resolution = RESOLUTION
+    camera.framerate = 24
+    camera.iso = 1600
+    camera.shutter_speed = 2000
+    # camera.awb_mode = 'off'
+    # camera.awb_gains = (1.5,1.5)
+    
+    f = FrameBuffer(RESOLUTION)
 
-recordDelay = float(input("Record Delay: "))
-time.sleep(recordDelay)
+    recordDelay = float(input("Record Delay: "))
+    time.sleep(recordDelay)
 
-camera.start_recording(f, 'yuv')
-try:
-    camera.wait_recording(MAX_RECORDING)
-    camera.stop_recording()
-except KeyboardInterrupt:
-    camera.stop_recording()
-camera.close()
+    camera.start_recording(f, 'yuv')
+    try:
+        camera.wait_recording(MAX_RECORDING)
+        camera.stop_recording()
+    except KeyboardInterrupt:
+        camera.stop_recording()
+    camera.close()
 
-# Multiprocessing
-pool = multiprocessing.Pool()
-mocap = pool.map(findMarker, f, chunksize=round(len(f.buffer) / 4))
-pool.close()
+    # Multiprocessing
+    pool = multiprocessing.Pool()
+    mocap = pool.map(findMarker, f, chunksize=round(f.frameCount / 4))
+    pool.close()
 
 
 # ## DEBUG ##
