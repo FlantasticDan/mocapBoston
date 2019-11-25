@@ -32,7 +32,13 @@ class FrameBuffer(object):
     def flush(self):
         self.frameCount = len(self.buffer)
         self.manager = multiprocessing.Manager()
-        self.pool = self.manager.list(self.buffer)
+        i, o = 0, 23
+        self.pool = self.manager.list(self.buffer[i:o])
+        del self.buffer[i:o]
+        while len(self.buffer) > (o + 1):
+            self.pool.extend(self.buffer[i:o])
+            del self.buffer[i:o]
+        self.pool.extend(self.buffer)
         del self.buffer
     
     def close(self):
