@@ -1,7 +1,9 @@
 import time
 import sys
 import multiprocessing
-import gc
+from socket import gethostname
+import pickle
+import os
 import picamera
 import numpy as np
 import cv2
@@ -131,6 +133,9 @@ def findMarker(bufferIndex):
     return md.markerID(image)
 
 if __name__ == "__main__":
+    print("Session ID")
+    sessionID = input()
+
     # Camera Setup
     camera = picamera.PiCamera()
     camera.resolution = RESOLUTION
@@ -168,6 +173,16 @@ if __name__ == "__main__":
     # Report Time Tracking
     multiTime = time.time() - multiStart
     print("Multi Core Processing Finished : {}".format(multiTime))
+
+    # Export Data
+    host = gethostname()
+    filename = "{}_{}.mocap".format(host, sessionID)
+
+    with open(filename, "wb") as pik:
+        pickle.dump(mocap, pik)
+    print("Data Exported to : {}".format(os.path.join(os.getcwd(), filename)))
+
+
 
 
 # ## DEBUG ##
