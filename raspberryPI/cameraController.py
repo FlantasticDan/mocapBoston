@@ -9,7 +9,7 @@ import markerDetection as md
 
 RESOLUTION = (1632, 1232)
 FRAMERATE = 24
-MAX_RECORDING = 35
+MAX_RECORDING = 15
 
 class FrameBuffer(object):
     def __init__(self, resolution):
@@ -30,7 +30,12 @@ class FrameBuffer(object):
         self.buffer.append(sensorOutput)
 
     def flush(self):
+        # Estabish Recording Length
         self.frameCount = len(self.buffer)
+        print("Finished Recording : {}".format(self.frameCount))
+
+        # Create Shared Memory Pool
+        memoryStart = time.time()
         self.manager = multiprocessing.Manager()
         i, o = 0, 23
         self.pool = self.manager.list(self.buffer[i:o])
@@ -40,6 +45,8 @@ class FrameBuffer(object):
             del self.buffer[i:o]
         self.pool.extend(self.buffer)
         del self.buffer
+        memoryTime = time.time() - memoryStart
+        print("Finished Creating Memory Pool : {}".format(memoryTime))
     
     def close(self):
         self.manager.shutdown()
@@ -135,9 +142,12 @@ if __name__ == "__main__":
     
     f = FrameBuffer(RESOLUTION)
 
-    recordDelay = float(input("Record Delay: "))
+    # Establish Scyned Record Start
+    print("Record Delay")
+    recordDelay = float(input())
     time.sleep(recordDelay)
 
+    # Recording
     camera.start_recording(f, 'yuv')
     try:
         camera.wait_recording(MAX_RECORDING)
@@ -146,11 +156,18 @@ if __name__ == "__main__":
         camera.stop_recording()
     camera.close()
 
+    # Time Tracking
+    multiStart = time.time()
+
     # Multiprocessing
     pool = multiprocessing.Pool()
     mocap = pool.map(findMarker, f, chunksize=round(f.frameCount / 4))
     pool.close()
     f.close()
+
+    # Report Time Tracking
+    multiTime = time.time() - multiStart
+    print("Multi Core Processing Finished : {}".format(multiTime))
 
 
 # ## DEBUG ##
