@@ -1,6 +1,8 @@
 import paramiko
 import time
 import random
+import pickle
+import os
 
 def generateSession():
     """Generates a Random 4 Digit Hex"""
@@ -62,4 +64,11 @@ print("Multi Core Processing Completed in {} seconds".format(processTime))
 
 # Retrieve Data
 filePath = getTelemtry(o)
+base = os.path.basename(filePath)
 print("Data Exported at {} on SSH Client".format(filePath))
+
+sftp = ssh.open_sftp()
+sftp.get(filePath, base)
+with open(base, "rb") as b:
+    data = pickle.load(b)
+    print("Recieved Data for {} Frames".format(len(data)))
