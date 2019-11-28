@@ -9,10 +9,6 @@ import numpy as np
 import cv2
 import markerDetection as md
 
-RESOLUTION = (1632, 1232)
-FRAMERATE = 24
-MAX_RECORDING = 15
-
 class FrameBuffer(object):
     def __init__(self, resolution):
         self.buffer = []
@@ -136,14 +132,36 @@ if __name__ == "__main__":
     print("Session ID")
     sessionID = input()
 
+    print("Resolution")
+    RESOLUTION = (int(input()), int(input()))
+
+    print("Frame Rate")
+    FRAMERATE = int(input())
+
+    print("Max Recording")
+    MAX_RECORDING = int(input())
+
+    print("ISO")
+    ISO = int(input())
+
+    print("Shutter Speed")
+    SHUTTER_SPEED = int(input())
+
+    print("AWB Mode")
+    AWB_MODE = input()
+
+    print("AWB Gains")
+    AWB_GAINS = (float(input()), float(input()))
+
+
     # Camera Setup
     camera = picamera.PiCamera()
     camera.resolution = RESOLUTION
-    camera.framerate = 24
-    camera.iso = 1600
-    camera.shutter_speed = 2000
-    # camera.awb_mode = 'off'
-    # camera.awb_gains = (1.5,1.5)
+    camera.framerate = FRAMERATE
+    camera.iso = ISO
+    camera.shutter_speed = SHUTTER_SPEED
+    camera.awb_mode = AWB_MODE
+    camera.awb_gains = AWB_GAINS
     
     f = FrameBuffer(RESOLUTION)
 
@@ -181,18 +199,3 @@ if __name__ == "__main__":
     with open(filename, "wb") as pik:
         pickle.dump(mocap, pik)
     print("Data Exported to : {}".format(os.path.join(os.getcwd(), filename)))
-
-
-
-
-# ## DEBUG ##
-# mocap = md.markerID(f.read(50))
-# cv2.imwrite("nate.jpg", md.drawMarkerID(f.read(50), mocap))
-
-# print("Finished Recording")
-# process = time.time()
-# mocap = []
-# for i, _ in enumerate(f.buffer):
-#     f.read(i)
-# finish = time.time() - process
-# print("Finished Single Core Processing in: {:3f} seconds.".format(finish))

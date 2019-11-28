@@ -9,6 +9,14 @@ HOST = ["blueTriangle"]
 STORAGE = "F:/mocapMath/Sandbox/rpi"
 # IP = ("10.10.10.2", "10.10.10.3", "10.10.10.4", "10.10.10.5")
 
+RESOLUTION = (1632, 1232)
+FRAMERATE = 24
+MAX_RECORDING = 15
+ISO = 1600
+SHUTTER_SPEED = 2000
+AWB_MODE = 'auto'
+AWB_GAINS = (1.5, 1.5)
+
 def generateSession():
     """Generates a Random 4 Digit Hex"""
     randomInt = random.randint(4096, 65535)
@@ -68,6 +76,22 @@ for client in IP:
     connection = remoteCamera(client)
     connection.hold("Session ID")
     connection.send(sessionID)
+    connection.hold("Resolution")
+    connection.send(RESOLUTION[0])
+    connection.send(RESOLUTION[1])
+    connection.hold("Frame Rate")
+    connection.send(FRAMERATE)
+    connection.hold("Max Recording")
+    connection.send(MAX_RECORDING)
+    connection.hold("ISO")
+    connection.send(ISO)
+    connection.hold("Shutter Speed")
+    connection.send(SHUTTER_SPEED)
+    connection.hold("AWB Mode")
+    connection.send(AWB_MODE)
+    connection.hold("AWB Gains")
+    connection.send(AWB_GAINS[0])
+    connection.send(AWB_GAINS[1])
     CAMERAS.append(connection)
 
 # Prepare to Start Recording
