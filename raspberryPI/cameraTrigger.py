@@ -23,9 +23,6 @@ def generateSession():
     hexInt = format(randomInt, 'X')
     return hexInt
 
-# Create Session Variables
-sessionID = generateSession()
-
 class remoteCamera():
     def __init__(self, ipAdress):
         self.ssh = paramiko.SSHClient()
@@ -70,55 +67,67 @@ class remoteCamera():
         sftp = self.ssh.open_sftp()
         sftp.get(remotepath, localpath)
 
-# Establish Connections
-CAMERAS = []
-for client in IP:
-    connection = remoteCamera(client)
-    connection.hold("Session ID")
-    connection.send(sessionID)
-    connection.hold("Resolution")
-    connection.send(RESOLUTION[0])
-    connection.send(RESOLUTION[1])
-    connection.hold("Frame Rate")
-    connection.send(FRAMERATE)
-    connection.hold("Max Recording")
-    connection.send(MAX_RECORDING)
-    connection.hold("ISO")
-    connection.send(ISO)
-    connection.hold("Shutter Speed")
-    connection.send(SHUTTER_SPEED)
-    connection.hold("AWB Mode")
-    connection.send(AWB_MODE)
-    connection.hold("AWB Gains")
-    connection.send(AWB_GAINS[0])
-    connection.send(AWB_GAINS[1])
-    CAMERAS.append(connection)
+def remoteCapture():
+    """Triggers remote capture and processing on connected hosts."""
+    # Create Session Variables
+    sessionID = generateSession()
 
-# Prepare to Start Recording
-for camera in CAMERAS:
-    camera.hold("Record Delay")
+    # Establish Connections
+    CAMERAS = []
+    for client in IP:
+        connection = remoteCamera(client)
+        connection.hold("Session ID")
+        connection.send(sessionID)
+        connection.hold("Resolution")
+        connection.send(RESOLUTION[0])
+        connection.send(RESOLUTION[1])
+        connection.hold("Frame Rate")
+        connection.send(FRAMERATE)
+        connection.hold("Max Recording")
+        connection.send(MAX_RECORDING)
+        connection.hold("ISO")
+        connection.send(ISO)
+        connection.hold("Shutter Speed")
+        connection.send(SHUTTER_SPEED)
+        connection.hold("AWB Mode")
+        connection.send(AWB_MODE)
+        connection.hold("AWB Gains")
+        connection.send(AWB_GAINS[0])
+        connection.send(AWB_GAINS[1])
+        CAMERAS.append(connection)
 
-# Sync Camera Record Starts
-timeUntilStart = 1
-timeBase = time.time()
-for camera in CAMERAS:
-    camera.send(str(timeUntilStart - (time.time() - timeBase)))
-holdTime = timeUntilStart - (time.time() - timeBase)
-time.sleep(holdTime)
-print("Recording Started on Remote Cameras")
+    # Prepare to Start Recording
+    for camera in CAMERAS:
+        camera.hold("Record Delay")
 
-# Get Telemetry
-for i, camera in enumerate(CAMERAS):
-    print("Recorded {} Frames on {}".format(camera.get(), HOST[i]))
-for i, camera in enumerate(CAMERAS):
-    print("Allocated Shared Memory in {} seconds on {}".format(camera.get(), HOST[i]))
-for i, camera in enumerate(CAMERAS):
-    print("Multi Core Processing Completed in {} seconds on {}".format(camera.get(), HOST[i]))
+    # Sync Camera Record Starts
+    timeUntilStart = 1
+    timeBase = time.time()
+    for camera in CAMERAS:
+        camera.send(str(timeUntilStart - (time.time() - timeBase)))
+    holdTime = timeUntilStart - (time.time() - timeBase)
+    time.sleep(holdTime)
+    print("Recording Started on Remote Cameras")
 
-# Retrieve Data
-for camera in CAMERAS:
-    dataPath = camera.get()
-    dataFile = os.path.basename(dataPath)
-    dataLocal = os.path.join(STORAGE, dataFile)
-    camera.getFile(dataPath, dataLocal)
-    print("Recieved {}".format(dataFile))
+    # Get Telemetry
+    for i, camera in enumerate(CAMERAS):
+        print("Recorded {} Frames on {}".format(camera.get(), HOST[i]))
+    for i, camera in enumerate(CAMERAS):
+        print("Allocated Shared Memory in {} seconds on {}".format(camera.get(), HOST[i]))
+    for i, camera in enumerate(CAMERAS):
+        print("Multi Core Processing Completed in {} seconds on {}".format(camera.get(), HOST[i]))
+
+    # Retrieve Data
+    os.mkdir(os.path.join(STORAGE, sessionID))
+    workspace = os.path.join(STORAGE, sessionID)
+    for camera in CAMERAS:
+        dataPath = camera.get()
+        dataFile = os.path.basename(dataPath)
+        dataLocal = os.path.join(workspace, dataFile)
+        camera.getFile(dataPath, dataLocal)
+        print("Recieved {}".format(dataFile))
+    
+    return workspace
+
+if __name__ == "__main__":
+    remoteCapture()
