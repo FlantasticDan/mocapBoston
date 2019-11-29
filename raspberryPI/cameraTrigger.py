@@ -24,12 +24,15 @@ def generateSession():
     return hexInt
 
 class remoteCamera():
-    def __init__(self, ipAdress):
+    def __init__(self, ipAdress, still=False):
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect(ipAdress, username="pi", password="mocapMath")
 
-        self.i, self.o, self.e = self.ssh.exec_command("cd /home/pi/Documents; python3 cameraController.py")
+        if not still:
+            self.i, self.o, self.e = self.ssh.exec_command("cd /home/pi/Documents; python3 cameraController.py")
+        else:
+            self.i, self.o, self.e = self.ssh.exec_command("cd /home/pi/Documents; python3 cameraController_Still.py")
 
     def hold(self, checksum):
         """Hold execution until remote camera returns the checksum string."""
@@ -67,13 +70,13 @@ class remoteCamera():
         sftp = self.ssh.open_sftp()
         sftp.get(remotepath, localpath)
 
-def remoteCapture(sessionID):
+def remoteCapture(sessionID, still=False):
     """Triggers remote capture and processing on connected hosts."""
 
     # Establish Connections
     CAMERAS = []
     for client in IP:
-        connection = remoteCamera(client)
+        connection = remoteCamera(client, still)
         connection.hold("Session ID")
         connection.send(sessionID)
         connection.hold("Resolution")
