@@ -67,10 +67,8 @@ class remoteCamera():
         sftp = self.ssh.open_sftp()
         sftp.get(remotepath, localpath)
 
-def remoteCapture():
+def remoteCapture(sessionID):
     """Triggers remote capture and processing on connected hosts."""
-    # Create Session Variables
-    sessionID = generateSession()
 
     # Establish Connections
     CAMERAS = []
@@ -130,4 +128,4 @@ def remoteCapture():
     return workspace
 
 if __name__ == "__main__":
-    remoteCapture()
+    remoteCapture(generateSession())
