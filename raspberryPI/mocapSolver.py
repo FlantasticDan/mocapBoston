@@ -3,6 +3,13 @@ import os
 import sys
 import numpy as np
 import mathutils
+from itertools import combinations
+
+RESOLUTION = (1632, 1232)
+
+# Detections String ID Constants
+COLOR_ID = ['red', 'yellow', 'green', 'cyan', 'blue', 'magenta', False]
+PATTERN_ID = ['triangle', 'square', 'circle', 'slash', 'line', 'y', False]
 
 def angleOfViewCalc(cam, aov, trackPos):
 
@@ -196,3 +203,69 @@ def lineCross(markerPositionA, markerPositionB, cameraA, cameraB):
         midpoint.append((pointA[q] + pointB[q]) / 2)
     midpoint.append(lineDistance)
     return midpoint # (x, y, z, distance)
+
+def solveFrame(*persp):
+    """
+    Solve all markers for the given frame.
+    
+    Args:
+        (marker dictionary, camera)
+
+    Returns:
+        List in the form of ("{color} {pattern}", (x, y, z), distance)
+    """
+
+    # Check for Enough Camera Angles
+    if len(persp) < 2:
+        raise Exception
+    
+    # Create List to Recieve Solved Points
+    solved = []
+
+    # Loop Though Each Possible Marker
+    for color in COLOR_ID:
+        for pattern in PATTERN_ID:
+            markers = []
+
+            # For each marker check each perspective for detection
+            for angle in persp:
+                if angle[0][color][pattern] is not None:
+                    markers.append((angle[0][color][pattern][0], angle[1]))
+            
+            # If marker was detected in at least 2 angles, triangulate the 3D Point
+            if len(markers) > 1:
+                sets = combinations(markers, 2)
+                points = []
+
+                # Triangulate the Point from Each Possible Pair of Detected Perspectives
+                for pair in sets:
+                    markerA = pair[0][0]
+                    a = (markerA[0] / RESOLUTION[0], markerA[1] / RESOLUTION[1])
+                    cameraA = pair[0][1]
+                    markerB = pair[1][0]
+                    b = (markerB[0] / RESOLUTION[0], markerB[1] / RESOLUTION[1])
+                    cameraB = pair[1][1]
+
+                    points.append(lineCross(a, b, cameraA, cameraB))
+                
+                # Average Triangulated Points together if necessary
+                if len(points) > 1:
+                    x = 0
+                    y = 0
+                    z = 0
+                    d = 0
+                    for coord in points:
+                        x += coord[0]
+                        y += coord[1]
+                        z += coord[2]
+                        d += coord[3]
+                    x = x / len(points)
+                    y = y / len(points)
+                    z = z / len(points)
+                    d = d / len(points)
+
+                    solved.append(("{} {}".format(color, pattern), (x, y, z), d))
+                else:
+                    solved.append(("{} {}".format(color, pattern), (points[0], points[1], points[2]), points[3]))
+    
+    return solved

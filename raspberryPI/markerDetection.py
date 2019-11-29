@@ -1,7 +1,5 @@
 """Tools for detecting and identifying markers in images."""
- 
-import tkinter as tk
-from tkinter import filedialog
+
 from statistics import mode
 import os
 import sys
@@ -10,10 +8,6 @@ import numpy as np
 from shapely.geometry.point import Point
 from shapely.geometry.polygon import Polygon
 from shapely.geometry import LineString
- 
-# Configure Tkinter
-root = tk.Tk()
-root.withdraw()
  
 # File Management
 def resource_path(relative_path):
