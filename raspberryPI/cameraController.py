@@ -2,12 +2,14 @@ import time
 import sys
 import multiprocessing
 from socket import gethostname
+from functools import partial
 import pickle
 import os
 import picamera
 import numpy as np
 import cv2
 import markerDetection as md
+import cameraCalibration as cc
 
 class FrameBuffer(object):
     def __init__(self, resolution):
@@ -128,6 +130,10 @@ def findMarker(bufferIndex):
     image = buffer2bgr(f.pool[bufferIndex])
     return md.markerID(image)
 
+def findCorners(bufferIndex, pattern):
+    image = buffer2bgr(f.pool[bufferIndex])
+    return cc.detectCorners(image, pattern)
+
 if __name__ == "__main__":
     print("Session ID")
     sessionID = input()
@@ -184,7 +190,16 @@ if __name__ == "__main__":
 
     # Multiprocessing
     pool = multiprocessing.Pool()
-    mocap = pool.map(findMarker, f, chunksize=round(f.frameCount / 4))
+    if len(sessionID) == 4:
+        mocap = pool.map(findMarker, f, chunksize=round(f.frameCount / 4))
+    else:
+        s = sessionID.split("-")
+        patternSize = (int(s[0]), int(s[1]))
+        detectCorners = partial(findCorners, pattern=patternSize)
+        lens = pool.map(detectCorners, f, chunksize=round(f.frameCount / 4))
+        imageSize = cc.getImageSize(buffer2bgr(f.pool[0]))
+        matrix, distortion, fov = cc.cameraCalibration(lens, 3.674, 2.76, patternSize[0], patternSize[1], imageSize)
+    
     pool.close()
     f.close()
 
@@ -194,8 +209,14 @@ if __name__ == "__main__":
 
     # Export Data
     host = gethostname()
-    filename = "{}_{}.mocap".format(host, sessionID)
+    if len(sessionID) == 4:
+        filename = "{}_{}.mocap".format(host, sessionID)
 
-    with open(filename, "wb") as pik:
-        pickle.dump(mocap, pik)
+        with open(filename, "wb") as pik:
+            pickle.dump(mocap, pik)
+    else:
+        filename = "{}_{}.calibration".format(host, s[2])
+        cc.exportCalibration(filename, matrix, distortion, fov)
+        filename += ".npz"
+
     print("Data Exported to : {}".format(os.path.join(os.getcwd(), filename)))

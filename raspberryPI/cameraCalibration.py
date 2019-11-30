@@ -61,18 +61,17 @@ def sensorOptimizer(horizontal, vertical, imageSize):
             return newSensor
     return sensor
 
-def detectCorners(imgPath, pattern):
+def detectCorners(img, pattern):
     """
     Find all chessboard corners in an image.
 
     Args:
-        imgPath: OpenCV compatiable image file path
+        img: OpenCV image
         pattern (cols, rows): Size of the interior chessboard grid.
 
     Returns:
         Array of coordinates of chessboard corners in image space.
     """
-    img = cv2.imread(imgPath)
     found, intersects = cv2.findChessboardCorners(img, pattern)
 
     if found is True:
@@ -110,18 +109,17 @@ def createCalibrationArrays(board, combinedCorners):
 
     return imagePoints, objectPoints
 
-def getImageSize(imgPath):
+def getImageSize(img):
     """Returns the dimensions of an image."""
-    img = cv2.imread(imgPath)
     size = img.shape
     return (size[1], size[0])
 
-def cameraCalibration(imgDirectory, sensorWidth, sensorHeight, patternColumns, patternRows):
+def cameraCalibration(detectedCorners, sensorWidth, sensorHeight, patternColumns, patternRows, imageSize):
     """
     Calculates necessary camera calibration metrics from an image set of a calibration chessboard.
 
     Args:
-        imgDirectory: Path to a directory containing the image set.
+        imgs: List of images containing the image set.
         sensorWidth: Width of the Image Sensor in mm.
         sensorHeight: Height of the Image Sensor in mm.
         patternColums: Number of interior columns on calibration pattern.
@@ -132,20 +130,8 @@ def cameraCalibration(imgDirectory, sensorWidth, sensorHeight, patternColumns, p
         distortion: Distortion Coefficents
         fov: (horizontal, vertical) field of view in degrees
     """
-    # Initialize Variables
-    detectedCorners = []
-    patternSize = (patternColumns, patternRows)
-    imageSize = None
-
     # Create Board Template
     board = makeChessboard(patternColumns, patternRows)
-
-    # Detect Corners in each Image
-    for image in os.listdir(imgDirectory):
-        imgPath = os.path.join(imgDirectory, image)
-        if imageSize is None:
-            imageSize = getImageSize(imgPath)
-        detectedCorners.append(detectCorners(imgPath, patternSize))
 
     # Confirm Sensor Size
     sensor = sensorOptimizer(sensorWidth, sensorHeight, imageSize)

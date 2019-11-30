@@ -46,6 +46,7 @@ class remoteCamera():
         if check == checksum:
             return True
         else:
+            print(self.e.readlines())
             raise Exception
     
     def get(self):
@@ -70,31 +71,39 @@ class remoteCamera():
         sftp = self.ssh.open_sftp()
         sftp.get(remotepath, localpath)
 
-def remoteCapture(sessionID, still=False):
+def remoteCapture(sessionID, still=False, ip=-1, resolution=(1632, 1232), fps=24, max_recording=15, iso=1600, shutter=2000, awb_mode='auto', awb_gains=(1.5, 1.5)):
     """Triggers remote capture and processing on connected hosts."""
+
+    # Allow for Single Remote Capture
+    if ip != -1:
+        ips = [IP[ip]]
+        hosts = [HOST[ip]]
+    else:
+        ips = IP
+        hosts = HOST
 
     # Establish Connections
     CAMERAS = []
-    for client in IP:
+    for client in ips:
         connection = remoteCamera(client, still)
         connection.hold("Session ID")
         connection.send(sessionID)
         connection.hold("Resolution")
-        connection.send(RESOLUTION[0])
-        connection.send(RESOLUTION[1])
+        connection.send(resolution[0])
+        connection.send(resolution[1])
         connection.hold("Frame Rate")
-        connection.send(FRAMERATE)
+        connection.send(fps)
         connection.hold("Max Recording")
-        connection.send(MAX_RECORDING)
+        connection.send(max_recording)
         connection.hold("ISO")
-        connection.send(ISO)
+        connection.send(iso)
         connection.hold("Shutter Speed")
-        connection.send(SHUTTER_SPEED)
+        connection.send(shutter)
         connection.hold("AWB Mode")
-        connection.send(AWB_MODE)
+        connection.send(awb_mode)
         connection.hold("AWB Gains")
-        connection.send(AWB_GAINS[0])
-        connection.send(AWB_GAINS[1])
+        connection.send(awb_gains[0])
+        connection.send(awb_gains[1])
         CAMERAS.append(connection)
 
     # Prepare to Start Recording
@@ -112,11 +121,11 @@ def remoteCapture(sessionID, still=False):
 
     # Get Telemetry
     for i, camera in enumerate(CAMERAS):
-        print("Recorded {} Frames on {}".format(camera.get(), HOST[i]))
+        print("Recorded {} Frames on {}".format(camera.get(), hosts[i]))
     for i, camera in enumerate(CAMERAS):
-        print("Allocated Shared Memory in {} seconds on {}".format(camera.get(), HOST[i]))
+        print("Allocated Shared Memory in {} seconds on {}".format(camera.get(), hosts[i]))
     for i, camera in enumerate(CAMERAS):
-        print("Multi Core Processing Completed in {} seconds on {}".format(camera.get(), HOST[i]))
+        print("Multi Core Processing Completed in {} seconds on {}".format(camera.get(), hosts[i]))
 
     # Retrieve Data
     os.mkdir(os.path.join(STORAGE, sessionID))
@@ -131,4 +140,5 @@ def remoteCapture(sessionID, still=False):
     return workspace
 
 if __name__ == "__main__":
-    remoteCapture(generateSession())
+    # remoteCapture(generateSession())
+    # remoteCapture("6-4-CalTest", fps=5, max_recording=5, iso=0, shutter=0)
