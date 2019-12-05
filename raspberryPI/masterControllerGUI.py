@@ -1,9 +1,12 @@
 import tkinter as tk
-import RPi.GPIO as GPIO
 import cameraTrigger
 
 class buttonInput:
     def __init__(self, GUI):
+        self.GUI = GUI
+    
+    def rPiBinding(self):
+        import RPi.GPIO as GPIO
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -11,10 +14,16 @@ class buttonInput:
         GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         edge = GPIO.FALLING
-        GPIO.add_event_detect(17, edge, GUI.button1, 250)
-        GPIO.add_event_detect(22, edge, GUI.button2, 250)
-        GPIO.add_event_detect(23, edge, GUI.button3, 250)
-        GPIO.add_event_detect(27, edge, GUI.button4, 250)
+        GPIO.add_event_detect(17, edge, self.GUI.button1, 250)
+        GPIO.add_event_detect(22, edge, self.GUI.button2, 250)
+        GPIO.add_event_detect(23, edge, self.GUI.button3, 250)
+        GPIO.add_event_detect(27, edge, self.GUI.button4, 250)
+    
+    def kbBinding(self):
+        self.GUI.master.bind('1', self.GUI.button1)
+        self.GUI.master.bind('2', self.GUI.button2)
+        self.GUI.master.bind('3', self.GUI.button3)
+        self.GUI.master.bind('4', self.GUI.button4)
 
 class cameraSetting:
     def __init__(self, setting, options, display):
@@ -78,7 +87,14 @@ class serverGUI:
         self.fps = cameraSetting("Recording Frame Rate", [24, 18, 15, 12, 6, 3], ["24", "18", "15", "12", "6", "3"])
         self.maxTime = cameraSetting("Record Duration", [30, 15, 10, 5, 1], ["30", "15", "10", "5", "1"])
 
-        buttonInput(self)
+        # Setup Inputs, Configured to Allow non-RPi Debugging via Keyboard
+        self.interface = buttonInput(self)
+        try:
+            self.interface.rPiBinding()
+        except ModuleNotFoundError:
+            print("RPI GPIO Inputs weren't detected.")
+        finally:
+            self.interface.kbBinding()
     
     def drawMainMenu(self):
         self.recording = buttonTitleBar(self.master, "Recording", "#FF6259", 1)
@@ -130,7 +146,7 @@ class serverGUI:
     
     def startCapture(self):
         sessionID = cameraTrigger.generateSession()
-        self.session = cameraSetting("Session ID", ["", sessionID], ["", sessionID])
+        self.session = cameraSetting("Session ID", [sessionID], [sessionID])
         self.session.drawUI(self.master, 1)
         self.status = cameraSetting("Status", ["Recording", "Processing", "Solving"], ["Recording", "Processing", "Solving"])
         self.status.drawUI(self.master, 2)
@@ -172,7 +188,7 @@ class serverGUI:
         elif self.screen == "FPStime":
             self.destroyFPStime()
             self.drawShutterISO()
-        elif self.screen == "Capture":
+        elif self.screen == "Recording":
             self.destroyRecording()
             self.startCapture()
 
