@@ -1,4 +1,19 @@
 import tkinter as tk
+import RPi.GPIO as GPIO
+
+class buttonInput:
+    def __init__(self, GUI):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+        edge = GPIO.FALLING
+        GPIO.add_event_detect(17, edge, GUI.button1, 250)
+        GPIO.add_event_detect(22, edge, GUI.button2, 250)
+        GPIO.add_event_detect(23, edge, GUI.button3, 250)
+        GPIO.add_event_detect(27, edge, GUI.button4, 250)
 
 class cameraSetting:
     def __init__(self, setting, options, display):
@@ -12,7 +27,7 @@ class cameraSetting:
         self.labels[self.index]['fg'] = 'black'
 
         self.index += 1
-        if self.index > len(self.options):
+        if self.index >= len(self.options):
             self.index = 0
         
         self.labels[self.index]['fg'] = 'red'
@@ -55,19 +70,21 @@ class serverGUI:
         master.maxsize(width=640, height=480)
 
         self.title = titleBar(master, "mocapBoston")
-
         self.drawMainMenu()
 
         self.shutter = cameraSetting("Shutter Speed", [0, 16000, 8000, 4000, 2000, 1000, 500, 250], ["auto", "60", "125", "250", "500", "1000", "2000", "4000"])
         self.iso = cameraSetting("ISO", [0, 100, 200, 400, 800], ["auto", "100", "200", "400", "800"])
         self.fps = cameraSetting("Recording Frame Rate", [24, 18, 15, 12, 6, 3], ["24", "18", "15", "12", "6", "3"])
         self.maxTime = cameraSetting("Record Duration", [30, 15, 10, 5, 1], ["30", "15", "10", "5", "1"])
+
+        buttonInput(self)
     
     def drawMainMenu(self):
         self.recording = buttonTitleBar(self.master, "Recording", "#FF6259", 1)
         self.lens = buttonTitleBar(self.master, "Lens Calibration", "#FF62E0", 2)
         self.worldOrient = buttonTitleBar(self.master, "World Orientation", "#86FF78", 3)
         self.settings = buttonTitleBar(self.master, "Camera Settings", "#80BEBF", 4)
+        self.screen = "main"
     
     def destroyMainMenu(self):
         self.recording.destroy()
@@ -80,6 +97,7 @@ class serverGUI:
         self.shutter.drawUI(self.master, 2)
         self.iso.drawUI(self.master, 3)
         self.next = buttonTitleBar(self.master, "More Settings", "grey", 4)
+        self.screen = "shutterISO"
     
     def destroyShutterISO(self):
         self.back.destroy()
@@ -92,6 +110,7 @@ class serverGUI:
         self.fps.drawUI(self.master, 2)
         self.maxTime.drawUI(self.master, 3)
         self.next = buttonTitleBar(self.master, "More Settings", "grey", 4)
+        self.screen = "FPStime"
     
     def destroyFPStime(self):
         self.back.destroy()
@@ -99,6 +118,36 @@ class serverGUI:
         self.maxTime.destroy()
         self.next.destroy()
 
+    def button1(self, pin):
+        if self.screen == "shutterISO":
+            self.destroyShutterISO()
+            self.drawMainMenu()
+        elif self.screen == "FPStime":
+            self.destroyFPStime()
+            self.drawMainMenu()
+    
+    def button2(self, pin):
+        if self.screen == "shutterISO":
+            self.shutter.advance()
+        elif self.screen == "FPStime":
+            self.fps.advance()
+
+    def button3(self, pin):
+        if self.screen == "shutterISO":
+            self.iso.advance()
+        elif self.screen == "FPStime":
+            self.maxTime.advance()
+
+    def button4(self, pin):
+        if self.screen == "main":
+            self.destroyMainMenu()
+            self.drawShutterISO()
+        elif self.screen == "shutterISO":
+            self.destroyShutterISO()
+            self.drawFPStime()
+        elif self.screen == "FPStime":
+            self.destroyFPStime()
+            self.drawShutterISO()
 
 class titleBar:
     def __init__(self, master, title):
