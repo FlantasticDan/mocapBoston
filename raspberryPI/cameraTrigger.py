@@ -138,7 +138,3 @@ def remoteCapture(sessionID, still=False, ip=-1, resolution=(1632, 1232), fps=24
         print("Recieved {}".format(dataFile))
     
     return workspace
-
-if __name__ == "__main__":
-    # remoteCapture(generateSession())
-    # remoteCapture("6-4-CalTest", fps=5, max_recording=5, iso=0, shutter=0)

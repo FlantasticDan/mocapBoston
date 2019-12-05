@@ -1,5 +1,6 @@
 import tkinter as tk
 import RPi.GPIO as GPIO
+import cameraTrigger
 
 class buttonInput:
     def __init__(self, GUI):
@@ -41,14 +42,14 @@ class cameraSetting:
         self.container = tk.Frame(master)
         self.grid = tk.Frame(self.container)
 
-        header = tk.Label(self.grid, text=self.property, font=("Helvetica", 12))
+        header = tk.Label(self.grid, text=self.property, font=("Helvetica", 16))
         self.grid.grid_rowconfigure(0, minsize=30)
         header.grid(row=0, column=0, columnspan=len(self.options))
 
         self.labels = []
         self.grid.grid_rowconfigure(1, minsize=75)
         for i, display in enumerate(self.display):
-            newOption = tk.Label(self.grid, text=display, font=("Helvetica", 20), fg="black")
+            newOption = tk.Label(self.grid, text=display, font=("Helvetica", 30), fg="black")
             newOption.grid(row=1, column=i)
             self.grid.grid_columnconfigure(i, minsize=640/len(self.options))
             self.labels.append(newOption)
@@ -72,7 +73,7 @@ class serverGUI:
         self.title = titleBar(master, "mocapBoston")
         self.drawMainMenu()
 
-        self.shutter = cameraSetting("Shutter Speed", [0, 16000, 8000, 4000, 2000, 1000, 500, 250], ["auto", "60", "125", "250", "500", "1000", "2000", "4000"])
+        self.shutter = cameraSetting("Shutter Speed", [0, 16000, 8000, 4000, 2000, 1000, 500, 250], ["auto", "60", "125", "250", "500", "1K", "2K", "4K"])
         self.iso = cameraSetting("ISO", [0, 100, 200, 400, 800], ["auto", "100", "200", "400", "800"])
         self.fps = cameraSetting("Recording Frame Rate", [24, 18, 15, 12, 6, 3], ["24", "18", "15", "12", "6", "3"])
         self.maxTime = cameraSetting("Record Duration", [30, 15, 10, 5, 1], ["30", "15", "10", "5", "1"])
@@ -118,12 +119,35 @@ class serverGUI:
         self.maxTime.destroy()
         self.next.destroy()
 
+    def drawRecording(self):
+        self.back = buttonTitleBar(self.master, "Return to the Menu", "grey", 1)
+        self.start = buttonTitleBar(self.master, "Start Capture", "#FF6259", 4)
+        self.screen = "Recording"
+    
+    def destroyRecording(self):
+        self.back.destroy()
+        self.start.destroy()
+    
+    def startCapture(self):
+        sessionID = cameraTrigger.generateSession()
+        self.session = cameraSetting("Session ID", ["", sessionID], ["", sessionID])
+        self.session.drawUI(self.master, 1)
+        self.status = cameraSetting("Status", ["Recording", "Processing", "Solving"], ["Recording", "Processing", "Solving"])
+        self.status.drawUI(self.master, 2)
+        self.screen = "Capture"
+
     def button1(self, pin):
         if self.screen == "shutterISO":
             self.destroyShutterISO()
             self.drawMainMenu()
         elif self.screen == "FPStime":
             self.destroyFPStime()
+            self.drawMainMenu()
+        elif self.screen == "main":
+            self.destroyMainMenu()
+            self.drawRecording()
+        elif self.screen == "Recording":
+            self.destroyRecording()
             self.drawMainMenu()
     
     def button2(self, pin):
@@ -148,6 +172,9 @@ class serverGUI:
         elif self.screen == "FPStime":
             self.destroyFPStime()
             self.drawShutterISO()
+        elif self.screen == "Capture":
+            self.destroyRecording()
+            self.startCapture()
 
 class titleBar:
     def __init__(self, master, title):
@@ -162,8 +189,9 @@ class titleBar:
 class buttonTitleBar:
     def __init__(self, master, title, color, row):
         self.container = tk.Frame(master)
+        self.text = title
 
-        self.header = tk.Label(self.container, bg=color, text=title, font=("Helvetica", 30))
+        self.header = tk.Label(self.container, bg=color, text=self.text, font=("Helvetica", 30))
         self.header.pack(fill="both", expand=1)
 
         self.container.place(width=640, height=105, y=(60 + (row - 1) * 105))
