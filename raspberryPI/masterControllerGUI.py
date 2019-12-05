@@ -70,7 +70,6 @@ class cameraSetting:
     
     def destroy(self):
         self.container.destroy()
-        
 
 class serverGUI:
     def __init__(self, master):
@@ -150,6 +149,7 @@ class serverGUI:
         self.session.drawUI(self.master, 1)
         self.status = cameraSetting("Status", ["Recording", "Processing", "Solving"], ["Recording", "Processing", "Solving"])
         self.status.drawUI(self.master, 2)
+        self.timer = statusTimer(self.master, "Time Elapsed", 3)
         self.screen = "Capture"
 
     def button1(self, pin):
@@ -214,6 +214,48 @@ class buttonTitleBar:
     
     def destroy(self):
         self.container.destroy()
+
+class statusTimer:
+    def __init__(self, master, title, row):
+        self.container = tk.Frame(master)
+        self.grid = tk.Frame(self.container)
+
+        # Small Header
+        header = tk.Label(self.grid, text=title, font=("Helvetica", 16))
+        self.grid.grid_rowconfigure(0, minsize=30)
+        self.grid.grid_columnconfigure(0, minsize=640)
+        header.grid(row=0, column=0)
+
+        # Timer Variables
+        self.display = tk.StringVar()
+        self.display.set("Not Started")
+        self.elapsed = 0
+
+        # Timer Display
+        self.grid.grid_rowconfigure(1, minsize=75)
+        self.timer = tk.Label(self.grid, textvariable=self.display, font=("Helvetica", 30), fg="black")
+        self.timer.grid(row=1, column=0)
+
+        # Place Widgets
+        self.grid.pack(fill="both", expand=1)
+        self.container.place(width=640, height=105, y=(60 + (row - 1) * 105))
+    
+    def destroy(self):
+        self.container.destroy()
+    
+    def addSecond(self):
+        self.elapsed += 1
+        seconds = self.elapsed % 60
+        minutes = self.elapsed // 60
+
+        if minutes < 1:
+            self.display.set("{}".format(seconds))
+            return None
+
+        self.display.set("{}:{:02d}".format(minutes, seconds))
+
+    def reset(self):
+        self.elapsed = -1
 
 root = tk.Tk()
 gui = serverGUI(root)
