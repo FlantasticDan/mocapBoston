@@ -8,7 +8,7 @@
         <meta property="og:site_name" content="mocapBoston">
         <meta property="og:title" content="Motion Capture Performance">
         <meta property="og:description" content="Check out this 3D motion capture performance created at mocapBoston!">
-        <meta property="og:url" content="https://mocap.boston/share/0A9F">
+        <meta property="og:url" content="https://mocap.boston/share/{{id}}">
         <meta property="fb:app_id" content="2275639242540793">
         <meta property="og:image" content="https://mocap.boston/branding/facebookBrand.jpg">
         <meta property="og:image:secure_url" content="https://mocap.boston/branding/facebookBrand.jpg">
@@ -52,7 +52,7 @@
                 <div class="ui black inverted segment" style="max-width: 960px; margin: auto;">
                     <div style="overflow: hidden; padding-top: 56.25%; position: relative;">
                         <video autoplay loop style="border: 0; height: 100%; left: 0; position: absolute; top: 0; width: 100%;" muted preload="auto">
-                            <source id= "playerSource" src="https://i.giphy.com/media/{{gifID}}/source.mp4" type="video/mp4">
+                            <source id= "playerSource" src="https://thumbs.gfycat.com/{{gifID}}-mobile.mp4" type="video/mp4">
                         </video>
                     </div>
                 </div>
@@ -96,13 +96,13 @@
                         <div class="column" style="text-align: center;">
                             <button id="giphyButton" class="ui black button" style="width: 80px; height: 28px; padding: 0;">
                                 <div style="width:fit-content; width: -moz-fit-content; display: flex; vertical-align: middle; height: 28px; margin: 0 auto; text-align: center;">
-                                    <img src="/branding/giphy-logo.png" height="20px" width="auto" style="float:left; margin:auto 0;">
+                                    <img src="/branding/gfycat-logo.png" height="20px" width="auto" style="float:left; margin:auto 0;">
                                     <p style="margin-top: auto; margin-bottom: auto; margin-left: 3px;">Share</p>
                                 </div>
                             </button>
                         </div>
                         <div class="column" style="text-align: center;">
-                            <a href="https://i.giphy.com/media/{{gifID}}/giphy.webp" download="mocapBoston.webp">
+                            <a href="http://thumbs.gfycat.com/{{gifID}}-size_restricted.gif" download="mocapBoston.gif">
                             <button id="download" class="ui red button" style="width: 105px; height: 28px; padding: 0;">
                                 <div style="width:fit-content; width: -moz-fit-content; display: flex; vertical-align: middle; height: 28px; margin: 0 auto; text-align: center;">
                                     <img src="/icons/download.png" height="13px" width="auto" style="float:left; margin:auto 0;">
@@ -139,15 +139,12 @@
 
         <div style="background-color: #0D0A0B; padding-top: 25px; padding-bottom: 25px; margin-top: 25px;">
             <div class="ui container">
-                <div class="ui stackable three column grid">
+                <div class="ui stackable two column grid">
                     <div class="column" style="height: 70px; display: block;">
                         <img src="/branding/dan-19.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
                     </div>
                     <div class="column" style="height: 70px;">
                         <img src="/branding/Built_with_Firebase_Logo_Knockout.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
-                    </div>
-                    <div class="column" style="height: 70px;">
-                        <img src="/branding/Poweredby_640px-Black_VertLogo.png" style="margin: auto; max-width: 100%; max-height: 100%; display: block;">
                     </div>
                 </div>
             </div>
@@ -159,7 +156,7 @@
             const copy = document.getElementById("copy");
 
             giphy.onclick = function() {
-                window.location.href = "https://giphy.com/gifs/{{gifID}}";
+                window.location.href = "https://gfycat.com/{{gifID}}";
             };
 
             const copyToClipboard = str => {
