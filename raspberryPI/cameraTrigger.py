@@ -8,7 +8,8 @@ import threading
 IP = ["192.168.1.113"]
 HOST = ["blueTriangle"]
 STORAGE = r"F:\mocapMath\Sandbox\rpi"
-# IP = ("10.10.10.2", "10.10.10.3", "10.10.10.4", "10.10.10.5")
+# IP = ["10.10.10.2", "10.10.10.3", "10.10.10.4", "10.10.10.5"]
+# HOST = ["blueTriangle", "greenTriangle", "redY", "cyanY"]
 
 RESOLUTION = (1632, 1232)
 FRAMERATE = 24

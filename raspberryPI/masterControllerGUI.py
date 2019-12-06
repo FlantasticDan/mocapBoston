@@ -1,8 +1,14 @@
 import tkinter as tk
+import os
 import time
+import pickle
 import threading
-import cameraTrigger
 import concurrent.futures
+import cameraTrigger
+import cameraCalibration as cc
+
+STORAGE = r"F:\mocapMath\Sandbox\rpi"
+HOSTS = ["blueTriangle", "greenTriangle", "redY", "cyanY"]
 
 class buttonInput:
     def __init__(self, GUI):
@@ -74,6 +80,59 @@ class cameraSetting:
     def destroy(self):
         self.container.destroy()
 
+class camera:
+    def __init__(self, cameraName):
+        self.cameraPath = os.path.join(STORAGE, cameraName)
+
+        if os.path.isfile(os.path.join(self.cameraPath, "lens.npz")):
+            self.matrix, self.distortion, self.fov = cc.importCalibration(os.path.join(self.cameraPath, "lens.npz"))
+            self.lens = True
+        else:
+            self.lens = False
+
+        if os.path.isfile(os.path.join(self.cameraPath, "world.camera")):
+            with open(os.path.join(self.cameraPath, "world.camera")) as data:
+                self.position, self.rotation = pickle.load(data)
+            self.world = True
+        else:
+            self.lens = False
+
+    def isReady(self):
+        if self.world and self.lens:
+            return True
+        else:
+            return False
+    
+    def moveLensFile(self):
+        os.rename(os.path.join(self.cameraPath, "lens.npz"), os.path.join(self.cameraPath, "lens", "lens-{}.npz".format(cameraTrigger.generateSession())))
+
+    def moveWorldFile(self):
+        os.rename(os.path.join(self.cameraPath, "world.camera"), os.path.join(self.cameraPath, "world", "world-{}.camera".format(cameraTrigger.generateSession())))
+    
+    def writeNewLensFile(self, matrix, distortion, fov):
+        if self.lens:
+            self.moveLensFile()
+
+        self.matrix = matrix
+        self.distortion = distortion
+        self.fov = fov
+
+        cc.exportCalibration(os.path.join(self.cameraPath, "lens"), matrix, distortion, fov)
+        self.lens = True
+    
+    def writeNewWorldFile(self, position, rotation):
+        if self.world:
+            self.moveWorldFile()
+        
+        self.position = position
+        self.rotation = rotation
+
+        with open(os.path.join(self.cameraPath, "world.camera"), "wb") as data:
+            payload = (position, rotation)
+            pickle.dump(payload, data)
+        
+        self.world = True
+
 class serverGUI:
     def __init__(self, master):
         self.master = master
@@ -84,10 +143,13 @@ class serverGUI:
         self.title = titleBar(master, "mocapBoston")
         self.drawMainMenu()
 
+        # Configure Camera Capture Settings
         self.shutter = cameraSetting("Shutter Speed", [0, 16000, 8000, 4000, 2000, 1000, 500, 250], ["auto", "60", "125", "250", "500", "1K", "2K", "4K"])
         self.iso = cameraSetting("ISO", [0, 100, 200, 400, 800], ["auto", "100", "200", "400", "800"])
         self.fps = cameraSetting("Recording Frame Rate", [24, 18, 15, 12, 6, 3], ["24", "18", "15", "12", "6", "3"])
         self.maxTime = cameraSetting("Record Duration", [30, 15, 10, 5, 1], ["30", "15", "10", "5", "1"])
+        self.pattern = cameraSetting("Calibration Pattern", ["6-4-", "9-7-"], ["6x4", "9x7"])
+        self.cameraSelect = cameraSetting("Camera Selection", [0, 1, 2, 3], ["blueTri", "greenTri", "redY", "cyanY"])
 
         # Setup Inputs, Configured to Allow non-RPi Debugging via Keyboard
         self.interface = buttonInput(self)
@@ -97,6 +159,11 @@ class serverGUI:
             print("RPI GPIO Inputs weren't detected.")
         finally:
             self.interface.kbBinding()
+        
+        # Configure Camera Calibrations
+        self.cameras = []
+        for client in HOSTS:
+            self.cameras.append(camera(client))
     
     def drawMainMenu(self):
         self.recording = buttonTitleBar(self.master, "Recording", "#FF6259", 1)
@@ -169,6 +236,55 @@ class serverGUI:
         self.timer.reset()
 
 
+    def lensCapture(self):
+        self.back = buttonTitleBar(self.master, "Return to the Menu", "grey", 1)
+        self.cameraSelect.drawUI(self.master, 2)
+        self.pattern.drawUI(self.master, 3)
+        self.start = buttonTitleBar(self.master, "Start Lens Calibration", "#FF62E0", 4)
+        self.screen = "LensCapture"
+    
+    def destroyLensCapture(self):
+        self.back.destroy()
+        self.cameraSelect.destroy()
+        self.pattern.destroy()
+        self.start.destroy()
+
+    def runLensCapture(self):
+        # Draw UI
+        self.sessionID = self.pattern.get() + cameraTrigger.generateSession()
+        self.session = cameraSetting("Session ID", [self.sessionID], [self.sessionID])
+        self.session.drawUI(self.master, 1)
+        self.status = cameraSetting("Status", ["Recording", "Processing"], ["Recording", "Processing"])
+        self.status.drawUI(self.master, 2)
+        self.timer = statusTimer(self.master, "Time Elapsed", 3)
+        self.screen = "runLensCapture"
+
+        # Start Lens Capture Process
+        self.lensCaptureExecutor = concurrent.futures.ThreadPoolExecutor()
+        self.lensCaptureFuture = self.lensCaptureExecutor.submit(cameraTrigger.remoteCapture, self.sessionID, (self.status, self.timer),
+                                                        still=False, ip=self.cameraSelect.get(), resolution=(1632, 1232), fps=self.fps.get(),
+                                                        max_recording=self.maxTime.get(), iso=self.iso.get(), shutter=self.shutter.get(),
+                                                        awb_mode='auto', awb_gains=(1.5, 1.5))
+        self.lensCaptureFuture.add_done_callback(self.finishedLensCapture)
+    
+    def finishedLensCapture(self, future):
+        lensCaptureDirectory = future.result()
+
+        # Redraw Relevant UI
+        self.status.destroy()
+        self.timer.destroy()
+        
+        # Save Lens Calibration into Camera Class
+        for calibration in os.listdir(lensCaptureDirectory):
+            path = os.path.join(lensCaptureDirectory, calibration)
+            matrix, distortion, fov = cc.importCalibration(path)
+            self.cameras[self.cameraSelect.get()].writeNewLensFile(matrix, distortion, fov)
+            break
+        
+        self.restart = buttonTitleBar(self.master, "New Lens Calibration", "#FF62E0", 4)
+        self.screen = "endLensCapture"
+
+
     def button1(self, pin):
         if self.screen == "shutterISO":
             self.destroyShutterISO()
@@ -182,18 +298,29 @@ class serverGUI:
         elif self.screen == "Recording":
             self.destroyRecording()
             self.drawMainMenu()
+        elif self.screen == "LensCapture":
+            self.destroyLensCapture()
+            self.drawMainMenu()
+
     
     def button2(self, pin):
         if self.screen == "shutterISO":
             self.shutter.advance()
         elif self.screen == "FPStime":
             self.fps.advance()
+        elif self.screen == "main":
+            self.destroyMainMenu()
+            self.lensCapture()
+        elif self.screen == "LensCapture":
+            self.cameraSelect.advance()
 
     def button3(self, pin):
         if self.screen == "shutterISO":
             self.iso.advance()
         elif self.screen == "FPStime":
             self.maxTime.advance()
+        elif self.screen == "LensCapture":
+            self.pattern.advance()
 
     def button4(self, pin):
         if self.screen == "main":
@@ -208,6 +335,14 @@ class serverGUI:
         elif self.screen == "Recording":
             self.destroyRecording()
             self.startCapture()
+        elif self.screen == "LensCapture":
+            self.destroyLensCapture()
+            self.runLensCapture()
+        elif self.screen == "endLensCapture":
+            self.lensCaptureExecutor.shutdown()
+            self.session.destroy()
+            self.restart.destroy()
+            self.lensCapture()
 
 class titleBar:
     def __init__(self, master, title):
