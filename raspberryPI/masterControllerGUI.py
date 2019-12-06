@@ -148,8 +148,8 @@ class serverGUI:
     
     def startCapture(self):
         # Draw UI
-        sessionID = cameraTrigger.generateSession()
-        self.session = cameraSetting("Session ID", [sessionID], [sessionID])
+        self.sessionID = cameraTrigger.generateSession()
+        self.session = cameraSetting("Session ID", [self.sessionID], [self.sessionID])
         self.session.drawUI(self.master, 1)
         self.status = cameraSetting("Status", ["Recording", "Processing", "Solving"], ["Recording", "Processing", "Solving"])
         self.status.drawUI(self.master, 2)
@@ -158,7 +158,15 @@ class serverGUI:
 
         # Start Capture Process
         self.captureExecutor = concurrent.futures.ThreadPoolExecutor()
-        self.captureFuture = self.captureExecutor.submit() # Add Camera Trigger Implementation
+        self.captureFuture = self.captureExecutor.submit(cameraTrigger.remoteCapture, self.sessionID, (self.status, self.timer),
+                                                        still=False, ip=-1, resolution=(1632, 1232), fps=self.fps.get(),
+                                                        max_recording=self.maxTime.get(), iso=self.iso.get(), shutter=self.shutter.get(),
+                                                        awb_mode='auto', awb_gains=(1.5, 1.5))
+        self.captureFuture.add_done_callback(self.finishedCapture)
+    
+    def finishedCapture(self, future):
+        self.captureDirectory = future.result()
+        self.timer.reset()
 
 
     def button1(self, pin):

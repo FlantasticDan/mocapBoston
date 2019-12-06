@@ -7,7 +7,7 @@ import threading
 
 IP = ["192.168.1.113"]
 HOST = ["blueTriangle"]
-STORAGE = "F:/mocapMath/Sandbox/rpi"
+STORAGE = r"F:\mocapMath\Sandbox\rpi"
 # IP = ("10.10.10.2", "10.10.10.3", "10.10.10.4", "10.10.10.5")
 
 RESOLUTION = (1632, 1232)
