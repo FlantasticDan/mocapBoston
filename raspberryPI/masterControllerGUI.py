@@ -2,6 +2,7 @@ import tkinter as tk
 import time
 import threading
 import cameraTrigger
+import concurrent.futures
 
 class buttonInput:
     def __init__(self, GUI):
@@ -146,6 +147,7 @@ class serverGUI:
         self.start.destroy()
     
     def startCapture(self):
+        # Draw UI
         sessionID = cameraTrigger.generateSession()
         self.session = cameraSetting("Session ID", [sessionID], [sessionID])
         self.session.drawUI(self.master, 1)
@@ -154,8 +156,10 @@ class serverGUI:
         self.timer = statusTimer(self.master, "Time Elapsed", 3)
         self.screen = "Capture"
 
-        t = threading.Thread(target=statusCounter, args=(self.timer,))
-        t.start()
+        # Start Capture Process
+        self.captureExecutor = concurrent.futures.ThreadPoolExecutor()
+        self.captureFuture = self.captureExecutor.submit() # Add Camera Trigger Implementation
+
 
     def button1(self, pin):
         if self.screen == "shutterISO":
@@ -261,16 +265,6 @@ class statusTimer:
 
     def reset(self):
         self.elapsed = -1
-
-killer = False
-
-def statusCounter(status):
-    while True:
-        time.sleep(1)
-        status.addSecond()
-        global killer
-        if killer:
-            break
 
 root = tk.Tk()
 gui = serverGUI(root)

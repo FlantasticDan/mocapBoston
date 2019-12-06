@@ -3,6 +3,7 @@ import time
 import random
 import pickle
 import os
+import threading
 
 IP = ["192.168.1.113"]
 HOST = ["blueTriangle"]
@@ -71,8 +72,19 @@ class remoteCamera():
         sftp = self.ssh.open_sftp()
         sftp.get(remotepath, localpath)
 
-def remoteCapture(sessionID, still=False, ip=-1, resolution=(1632, 1232), fps=24, max_recording=15, iso=1600, shutter=2000, awb_mode='auto', awb_gains=(1.5, 1.5)):
+def remoteCapture(sessionID, gui, still=False, ip=-1, resolution=(1632, 1232), fps=24, max_recording=15, iso=1600, shutter=2000, awb_mode='auto', awb_gains=(1.5, 1.5)):
     """Triggers remote capture and processing on connected hosts."""
+
+    progress = gui[0]
+    timer = gui[1]
+    killer = False
+    def statusCounter(status):
+        while True:
+            time.sleep(1)
+            status.addSecond()
+            nonlocal killer
+            if killer:
+                break
 
     # Allow for Single Remote Capture
     if ip != -1:
@@ -119,9 +131,24 @@ def remoteCapture(sessionID, still=False, ip=-1, resolution=(1632, 1232), fps=24
     time.sleep(holdTime)
     print("Recording Started on Remote Cameras")
 
+    # Start Recording Timer
+    timeThread = threading.Thread(target=statusCounter, args=(timer,))
+    timeThread.start()
+
     # Get Telemetry
     for i, camera in enumerate(CAMERAS):
         print("Recorded {} Frames on {}".format(camera.get(), hosts[i]))
+
+    # End Recording Timer / Start Processing Timer
+    killer = True
+    timeThread.join()
+    killer = False
+    progress.advance()
+    timer.reset()
+    timeThread = threading.Thread(target=statusCounter, args=(timer,))
+    timeThread.start()
+
+    # Get Processing Telemetry
     for i, camera in enumerate(CAMERAS):
         print("Allocated Shared Memory in {} seconds on {}".format(camera.get(), hosts[i]))
     for i, camera in enumerate(CAMERAS):
@@ -137,4 +164,9 @@ def remoteCapture(sessionID, still=False, ip=-1, resolution=(1632, 1232), fps=24
         camera.getFile(dataPath, dataLocal)
         print("Recieved {}".format(dataFile))
     
+    # End Processing Timer
+    killer = True
+    timeThread.join()
+    progress.advance()
+
     return workspace
