@@ -1,4 +1,6 @@
 import tkinter as tk
+import time
+import threading
 import cameraTrigger
 
 class buttonInput:
@@ -152,6 +154,9 @@ class serverGUI:
         self.timer = statusTimer(self.master, "Time Elapsed", 3)
         self.screen = "Capture"
 
+        t = threading.Thread(target=statusCounter, args=(self.timer,))
+        t.start()
+
     def button1(self, pin):
         if self.screen == "shutterISO":
             self.destroyShutterISO()
@@ -256,6 +261,16 @@ class statusTimer:
 
     def reset(self):
         self.elapsed = -1
+
+killer = False
+
+def statusCounter(status):
+    while True:
+        time.sleep(1)
+        status.addSecond()
+        global killer
+        if killer:
+            break
 
 root = tk.Tk()
 gui = serverGUI(root)
