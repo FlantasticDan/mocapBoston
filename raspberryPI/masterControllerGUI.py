@@ -1,5 +1,6 @@
 import tkinter as tk
 import os
+import sys
 import time
 import pickle
 import threading
@@ -147,6 +148,7 @@ class serverGUI:
         self.shutter = cameraSetting("Shutter Speed", [0, 16000, 8000, 4000, 2000, 1000, 500, 250], ["auto", "60", "125", "250", "500", "1K", "2K", "4K"])
         self.iso = cameraSetting("ISO", [0, 100, 200, 400, 800], ["auto", "100", "200", "400", "800"])
         self.fps = cameraSetting("Recording Frame Rate", [24, 18, 15, 12, 6, 3], ["24", "18", "15", "12", "6", "3"])
+        self.awbMode = cameraSetting("AWB Mode", ["auto", "tungsten", "fluorescent", "sunlight"], ["auto", "tungsten", "f-scent", "sun"])
         self.maxTime = cameraSetting("Record Duration", [30, 15, 10, 5, 1], ["30", "15", "10", "5", "1"])
         self.pattern = cameraSetting("Calibration Pattern", ["6-4-", "9-7-"], ["6x4", "9x7"])
         self.cameraSelect = cameraSetting("Camera Selection", [0, 1, 2, 3], ["blueTri", "greenTri", "redY", "cyanY"])
@@ -203,6 +205,19 @@ class serverGUI:
         self.fps.destroy()
         self.maxTime.destroy()
         self.next.destroy()
+    
+    def drawAWBshutdown(self):
+        self.back = buttonTitleBar(self.master, "Return to the Menu", "grey", 1)
+        self.awbMode.drawUI(self.master, 2)
+        self.shutdown = buttonTitleBar(self.master, "Shutdown Clients", "#FF62E0", 3)
+        self.exit = buttonTitleBar(self.master, "Exit", "#FF6259", 4)
+        self.screen = "AWBshutdown"
+    
+    def destroyAWBshutdown(self):
+        self.back.destroy()
+        self.awbMode.destroy()
+        self.shutdown.destroy()
+        self.exit.destroy()
 
     def drawRecording(self):
         self.back = buttonTitleBar(self.master, "Return to the Menu", "grey", 1)
@@ -228,7 +243,7 @@ class serverGUI:
         self.captureFuture = self.captureExecutor.submit(cameraTrigger.remoteCapture, self.sessionID, (self.status, self.timer),
                                                         still=False, ip=-1, resolution=(1632, 1232), fps=self.fps.get(),
                                                         max_recording=self.maxTime.get(), iso=self.iso.get(), shutter=self.shutter.get(),
-                                                        awb_mode='auto', awb_gains=(1.5, 1.5))
+                                                        awb_mode=self.awbMode.get())
         self.captureFuture.add_done_callback(self.finishedCapture)
     
     def finishedCapture(self, future):
@@ -264,7 +279,7 @@ class serverGUI:
         self.lensCaptureFuture = self.lensCaptureExecutor.submit(cameraTrigger.remoteCapture, self.sessionID, (self.status, self.timer),
                                                         still=False, ip=self.cameraSelect.get(), resolution=(1632, 1232), fps=self.fps.get(),
                                                         max_recording=self.maxTime.get(), iso=self.iso.get(), shutter=self.shutter.get(),
-                                                        awb_mode='auto', awb_gains=(1.5, 1.5))
+                                                        awb_mode=self.awbMode.get())
         self.lensCaptureFuture.add_done_callback(self.finishedLensCapture)
     
     def finishedLensCapture(self, future):
@@ -301,6 +316,9 @@ class serverGUI:
         elif self.screen == "LensCapture":
             self.destroyLensCapture()
             self.drawMainMenu()
+        elif self.screen == "AWBshutdown":
+            self.destroyAWBshutdown()
+            self.drawMainMenu()
 
     
     def button2(self, pin):
@@ -313,6 +331,8 @@ class serverGUI:
             self.lensCapture()
         elif self.screen == "LensCapture":
             self.cameraSelect.advance()
+        elif self.screen == "AWBshutdown":
+            self.awbMode.advance()
 
     def button3(self, pin):
         if self.screen == "shutterISO":
@@ -321,6 +341,8 @@ class serverGUI:
             self.maxTime.advance()
         elif self.screen == "LensCapture":
             self.pattern.advance()
+        elif self.screen == "AWBshutdown":
+            cameraTrigger.shutdown()
 
     def button4(self, pin):
         if self.screen == "main":
@@ -331,7 +353,9 @@ class serverGUI:
             self.drawFPStime()
         elif self.screen == "FPStime":
             self.destroyFPStime()
-            self.drawShutterISO()
+            self.drawAWBshutdown()
+        elif self.screen == "AWBshutdown":
+            sys.exit()
         elif self.screen == "Recording":
             self.destroyRecording()
             self.startCapture()

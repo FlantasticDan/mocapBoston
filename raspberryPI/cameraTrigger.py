@@ -26,15 +26,18 @@ def generateSession():
     return hexInt
 
 class remoteCamera():
-    def __init__(self, ipAdress, still=False):
+    def __init__(self, ipAdress, still=False, command=None):
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect(ipAdress, username="pi", password="mocapMath")
 
-        if not still:
-            self.i, self.o, self.e = self.ssh.exec_command("cd /home/pi/Documents; python3 cameraController.py")
+        if command is None:
+            if not still:
+                self.i, self.o, self.e = self.ssh.exec_command("cd /home/pi/Documents; python3 cameraController.py")
+            else:
+                self.i, self.o, self.e = self.ssh.exec_command("cd /home/pi/Documents; python3 cameraController_Still.py")
         else:
-            self.i, self.o, self.e = self.ssh.exec_command("cd /home/pi/Documents; python3 cameraController_Still.py")
+            self.i, self.o, self.e = self.ssh.exec_command(command)
 
     def hold(self, checksum):
         """Hold execution until remote camera returns the checksum string."""
@@ -171,3 +174,7 @@ def remoteCapture(sessionID, gui, still=False, ip=-1, resolution=(1632, 1232), f
     progress.advance()
 
     return workspace
+
+def shutdown():
+    for client in IP:
+        remoteCamera(client, command="sudo shutdown -h now")
