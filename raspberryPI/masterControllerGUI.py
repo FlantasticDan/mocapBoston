@@ -84,6 +84,7 @@ class cameraSetting:
 class camera:
     def __init__(self, cameraName):
         self.cameraPath = os.path.join(STORAGE, cameraName)
+        self.cameraName = cameraName
 
         if os.path.isfile(os.path.join(self.cameraPath, "lens.npz")):
             self.matrix, self.distortion, self.fov = cc.importCalibration(os.path.join(self.cameraPath, "lens.npz"))
@@ -133,6 +134,9 @@ class camera:
             pickle.dump(payload, data)
         
         self.world = True
+        print("\n{} World Calibration:".format(self.cameraName))
+        print("Position: {}".format(position))
+        print("Rotation: {}\n".format(rotation))
 
 class serverGUI:
     def __init__(self, master):
@@ -435,5 +439,9 @@ class statusTimer:
 
 root = tk.Tk()
 gui = serverGUI(root)
+try:
+    root.attributes('-fullscreen', True)
+except tk.TclError:
+    print("Couldn't Enter Fullscreen")
 
 root.mainloop()
