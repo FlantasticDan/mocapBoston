@@ -93,11 +93,11 @@ class camera:
             self.lens = False
 
         if os.path.isfile(os.path.join(self.cameraPath, "world.camera")):
-            with open(os.path.join(self.cameraPath, "world.camera")) as data:
+            with open(os.path.join(self.cameraPath, "world.camera"), "rb") as data:
                 self.position, self.rotation = pickle.load(data)
             self.world = True
         else:
-            self.lens = False
+            self.world = False
 
     def isReady(self):
         if self.world and self.lens:
@@ -170,6 +170,9 @@ class serverGUI:
         self.cameras = []
         for client in HOSTS:
             self.cameras.append(camera(client))
+        
+        # Attach World Calibration Pattern
+        self.worldPattern = cc.importMarkerPlacement(os.path.join(STORAGE, "worldPattern.txt"))
     
     def drawMainMenu(self):
         self.recording = buttonTitleBar(self.master, "Recording", "#FF6259", 1)
@@ -303,6 +306,72 @@ class serverGUI:
         self.restart = buttonTitleBar(self.master, "New Lens Calibration", "#FF62E0", 4)
         self.screen = "endLensCapture"
 
+    def worldOrientation(self):
+        self.back = buttonTitleBar(self.master, "Return to the Menu", "grey", 1)
+        self.start = buttonTitleBar(self.master, "Start World Orientation", "#86FF78", 4)
+        self.screen = "worldOrient"
+    
+    def destoryWorldOrientation(self):
+        self.back.destroy()
+        self.start.destroy()
+
+    def runWorldOrientation(self):
+        self.sessionID = cameraTrigger.generateSession()
+        self.session = cameraSetting("Session ID", [self.sessionID], [self.sessionID])
+        self.session.drawUI(self.master, 1)
+        self.status = cameraSetting("Status", ["Recording", "Processing", "Solving"], ["Recording", "Processing", "Solving"])
+        self.status.drawUI(self.master, 2)
+        self.timer = statusTimer(self.master, "Time Elapsed", 3)
+        self.screen = "runWorldOrient"
+
+        self.worldOrientExecutor = concurrent.futures.ThreadPoolExecutor()
+        self.worldOrientFuture = self.worldOrientExecutor.submit(cameraTrigger.remoteCapture, self.sessionID, (self.status, self.timer),
+                                                        still=False, ip=-1, resolution=(1632, 1232), fps=10,
+                                                        max_recording=5, iso=self.iso.get(), shutter=self.shutter.get(),
+                                                        awb_mode=self.awbMode.get())
+        self.worldOrientFuture.add_done_callback(self.finishedWorldOrient)
+    
+    def finishedWorldOrient(self, future):
+        self.worldMarkersDir = future.result()
+
+        # Redraw UI
+        self.timer.reset()
+        killer = False
+        def statusCounter(status):
+            while True:
+                time.sleep(1)
+                status.addSecond()
+                nonlocal killer
+                if killer:
+                    break
+        # Start Recording Timer
+        timeThread = threading.Thread(target=statusCounter, args=(self.timer,))
+        timeThread.start()
+
+        for mocap in os.listdir(self.worldMarkersDir):
+            cameraID = mocap.split("_")[0]
+            cameraIndex = HOSTS.index(cameraID)
+            cam = self.cameras[cameraIndex]
+
+            mocapFile = os.path.join(self.worldMarkersDir, mocap)
+            with open(mocapFile, "rb") as binary:
+                markers = pickle.load(binary)
+            
+            imagePoints, objectPoints = cc.correlatePlacementWithDetection(self.worldPattern, markers[25])
+            position, rotation = cc.solveCamera(cam.matrix, cam.distortion, imagePoints, objectPoints)
+
+            cam.writeNewWorldFile(position, rotation)
+        
+        killer = True
+        timeThread.join()
+        self.timer.destroy()
+        self.status.destroy()
+        self.back = buttonTitleBar(self.master, "Back to Menu", "#86FF78", 4)
+        self.screen = "endWorldOrient"
+    
+    def destroyEndWorldOrient(self):
+        self.back.destroy()
+        self.session.destroy()
 
     def button1(self, pin):
         if self.screen == "shutterISO":
@@ -322,6 +391,9 @@ class serverGUI:
             self.drawMainMenu()
         elif self.screen == "AWBshutdown":
             self.destroyAWBshutdown()
+            self.drawMainMenu()
+        elif self.screen == "worldOrient":
+            self.destoryWorldOrientation()
             self.drawMainMenu()
 
     
@@ -347,6 +419,9 @@ class serverGUI:
             self.pattern.advance()
         elif self.screen == "AWBshutdown":
             cameraTrigger.shutdown()
+        elif self.screen == "main":
+            self.destroyMainMenu()
+            self.worldOrientation()
 
     def button4(self, pin):
         if self.screen == "main":
@@ -371,6 +446,13 @@ class serverGUI:
             self.session.destroy()
             self.restart.destroy()
             self.lensCapture()
+        elif self.screen == "endWorldOrient":
+            self.worldOrientExecutor.shutdown()
+            self.destroyEndWorldOrient()
+            self.drawMainMenu()
+        elif self.screen == "worldOrient":
+            self.destoryWorldOrientation()
+            self.runWorldOrientation()
 
 class titleBar:
     def __init__(self, master, title):

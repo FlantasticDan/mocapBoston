@@ -5,8 +5,8 @@ import pickle
 import os
 import threading
 
-IP = ["192.168.1.113"]
-HOST = ["blueTriangle"]
+IP = ["192.168.1.113", "192.168.1.115", "192.168.1.114", "192.168.1.112"]
+HOST = ["blueTriangle", "greenTriangle", "redY", "cyanY"]
 STORAGE = r"F:\mocapMath\Sandbox\rpi"
 # IP = ["10.10.10.2", "10.10.10.3", "10.10.10.4", "10.10.10.5"]
 # HOST = ["blueTriangle", "greenTriangle", "redY", "cyanY"]

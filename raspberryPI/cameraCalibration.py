@@ -222,8 +222,8 @@ def correlatePlacementWithDetection(placement, detection):
         objPts.append(marker[2])
 
     # Convert to Numpy Arrays
-    imagePoints = np.array(imgPts)
-    objectPoints = np.array(objPts)
+    imagePoints = np.array(imgPts, "float32")
+    objectPoints = np.array(objPts, "float32")
 
     return imagePoints, objectPoints
 
