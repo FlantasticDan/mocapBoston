@@ -7,9 +7,10 @@ import threading
 import concurrent.futures
 import cameraTrigger
 import cameraCalibration as cc
+import mocapSolver as solver
 
 STORAGE = r"F:\mocapMath\Sandbox\rpi"
-HOSTS = ["blueTriangle", "greenTriangle", "redY", "cyanY"]
+HOSTS = ["blueTriangle", "greenTriangle", "redY"]
 
 class buttonInput:
     def __init__(self, GUI):
@@ -137,6 +138,9 @@ class camera:
         print("\n{} World Calibration:".format(self.cameraName))
         print("Position: {}".format(position))
         print("Rotation: {}\n".format(rotation))
+    
+    def getProperties(self):
+        return (self.position[0], self.position[1], self.position[2], self.rotation[0], self.rotation[1], self.rotation[2], self.fov[0], self.fov[1])
 
 class serverGUI:
     def __init__(self, master):
@@ -257,6 +261,53 @@ class serverGUI:
         self.captureDirectory = future.result()
         self.timer.reset()
 
+        # Redraw UI
+        self.timer.reset()
+        killer = False
+        def statusCounter(status):
+            while True:
+                time.sleep(1)
+                status.addSecond()
+                nonlocal killer
+                if killer:
+                    break
+        # Start Recording Timer
+        timeThread = threading.Thread(target=statusCounter, args=(self.timer,))
+        timeThread.start()
+
+        markers = []
+        cameras = []
+        length = 10000
+        for mocap in os.listdir(self.captureDirectory):
+            cameraID = mocap.split("_")[0]
+            cameraIndex = HOSTS.index(cameraID)
+            cam = self.cameras[cameraIndex]
+            cameras.append(cam)
+
+            mocapFile = os.path.join(self.captureDirectory, mocap)
+            with open(mocapFile, "rb") as binary:
+                marker = pickle.load(binary)
+            
+            markers.append(marker)
+            if len(marker) < length:
+                length = len(marker)
+            
+        frame = 0
+        self.solved = []
+        while frame < length:
+            persp = []
+            for i, angle in enumerate(markers):
+                camProps = cameras[i].getProperties()
+                persp.append((angle[frame], camProps))        
+            self.solved.append(solver.solveFrame(*persp))
+            frame += 1
+        
+        killer = True
+        timeThread.join()
+        self.status.destroy()
+        self.timer.destroy()
+        self.start = buttonTitleBar(self.master, "New Capture", "#FF6259", 4)
+        self.screen = "finishedCapture"
 
     def lensCapture(self):
         self.back = buttonTitleBar(self.master, "Return to the Menu", "grey", 1)
@@ -453,6 +504,12 @@ class serverGUI:
         elif self.screen == "worldOrient":
             self.destoryWorldOrientation()
             self.runWorldOrientation()
+        elif self.screen == "finishedCapture":
+            self.captureExecutor.shutdown()
+            self.session.destroy()
+            self.start.destroy()
+            self.drawRecording()
+            print(self.solved)
 
 class titleBar:
     def __init__(self, master, title):
