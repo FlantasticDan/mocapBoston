@@ -302,6 +302,11 @@ class serverGUI:
             self.solved.append(solver.solveFrame(*persp))
             frame += 1
         
+        # Post Processing
+        with open(os.path.join(self.captureDirectory, "solve.mocap"), "wb") as data:
+            pickle.dump(self.solved, data)
+
+        # UI Cleanup
         killer = True
         timeThread.join()
         self.status.destroy()
@@ -509,7 +514,6 @@ class serverGUI:
             self.session.destroy()
             self.start.destroy()
             self.drawRecording()
-            print(self.solved)
 
 class titleBar:
     def __init__(self, master, title):
