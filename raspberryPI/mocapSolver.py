@@ -120,9 +120,9 @@ def pointsOnLine(camera, markerPosition):
     newPoint = []
     for r in range(0, 3):
         newPoint.append(zRotate[r] + float(originPoint[r]))
-
-    return (np.array([originPoint[0], originPoint[1], originPoint[2]]),
-            np.array([newPoint[0], newPoint[1], newPoint[2]]))
+    
+    o = np.array([originPoint[0], originPoint[1], originPoint[2]])
+    return (np.reshape(o, (3)), np.array([newPoint[0], newPoint[1], newPoint[2]]))
 
 def closestDistanceBetweenLines(a0, a1, b0, b1):
 
@@ -266,6 +266,6 @@ def solveFrame(*persp):
 
                     solved.append(("{} {}".format(color, pattern), (x, y, z), d))
                 else:
-                    solved.append(("{} {}".format(color, pattern), (points[0], points[1], points[2]), points[3]))
+                    solved.append(("{} {}".format(color, pattern), (points[0][0], points[0][1], points[0][2]), points[0][3]))
     
     return solved
