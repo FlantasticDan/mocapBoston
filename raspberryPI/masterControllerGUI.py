@@ -8,9 +8,21 @@ import concurrent.futures
 import cameraTrigger
 import cameraCalibration as cc
 import mocapSolver as solver
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+from firebase_admin import storage
 
 STORAGE = r"F:\mocapMath\Sandbox\rpi"
 HOSTS = ["blueTriangle", "greenTriangle", "redY"]
+
+# Use a service account
+cred = credentials.Certificate('secret/raspberryPi.json')
+firebase_admin.initialize_app(cred, {'storageBucket': 'mocapboston.appspot.com'})
+
+firestoreDatabase = firestore.client()
+COLLECTION = firestoreDatabase.collection(u'dev')
+BUCKET = storage.bucket()
 
 class buttonInput:
     def __init__(self, GUI):
@@ -153,10 +165,10 @@ class serverGUI:
         self.drawMainMenu()
 
         # Configure Camera Capture Settings
-        self.shutter = cameraSetting("Shutter Speed", [0, 16000, 8000, 4000, 2000, 1000, 500, 250], ["auto", "60", "125", "250", "500", "1K", "2K", "4K"])
+        self.shutter = cameraSetting("Shutter Speed", [0, 16000, 8000, 4000, 2000, 1000], ["auto", "60", "125", "250", "500", "1K"])
         self.iso = cameraSetting("ISO", [0, 100, 200, 400, 800], ["auto", "100", "200", "400", "800"])
         self.fps = cameraSetting("Recording Frame Rate", [24, 18, 15, 12, 6, 3], ["24", "18", "15", "12", "6", "3"])
-        self.awbMode = cameraSetting("AWB Mode", ["auto", "tungsten", "fluorescent", "sunlight"], ["auto", "tungsten", "f-scent", "sun"])
+        self.awbMode = cameraSetting("AWB Mode", ["auto", "tungsten", "fluorescent", "sun"], ["auto", "tungsten", "f-scent", "sun"])
         self.maxTime = cameraSetting("Record Duration", [30, 15, 10, 5, 1], ["30", "15", "10", "5", "1"])
         self.pattern = cameraSetting("Calibration Pattern", ["6-4-", "9-7-"], ["6x4", "9x7"])
         self.cameraSelect = cameraSetting("Camera Selection", [0, 1, 2, 3], ["blueTri", "greenTri", "redY", "cyanY"])
@@ -239,9 +251,21 @@ class serverGUI:
         self.back.destroy()
         self.start.destroy()
     
+    def initFirebaseDoc(self):
+        self.document = COLLECTION.document(self.sessionID.lower())
+        self.document.set({
+            u'firstVisit': False,
+            u'galleryVisible': False,
+            u'gifID': u'ClosedBrilliantGermanwirehairedpointer',
+            u'processed': False,
+            u'shareAnswer': False,
+            u'solved': False
+        })
+    
     def startCapture(self):
         # Draw UI
         self.sessionID = cameraTrigger.generateSession()
+        self.initFirebaseDoc()
         self.session = cameraSetting("Session ID", [self.sessionID], [self.sessionID])
         self.session.drawUI(self.master, 1)
         self.status = cameraSetting("Status", ["Recording", "Processing", "Solving"], ["Recording", "Processing", "Solving"])
@@ -305,6 +329,10 @@ class serverGUI:
         # Post Processing
         with open(os.path.join(self.captureDirectory, "solve.mocap"), "wb") as data:
             pickle.dump(self.solved, data)
+        self.blob = BUCKET.blob(self.sessionID.lower())
+        with open(os.path.join(self.captureDirectory, "solve.mocap"), "rb") as data:
+            self.blob.upload_from_file(data)
+        self.document.set({u'solved' : True}, merge=True)
 
         # UI Cleanup
         killer = True

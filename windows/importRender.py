@@ -29,3 +29,6 @@ while frame < end:
         obj.location = point[1]
         obj.keyframe_insert(data_path="location", frame=frame)
     frame += 1
+
+C.scene.render.filepath = os.path.join(filePath, "render.mp4")
+bpy.ops.render.render(animation=True)
