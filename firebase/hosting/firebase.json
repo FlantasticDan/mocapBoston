@@ -22,6 +22,10 @@
       {
         "source": "/add/**",
         "function":"addGallery"
+      },
+      {
+        "source": "/gallery",
+        "destination": "/gallery.html"
       }
     ]
   },

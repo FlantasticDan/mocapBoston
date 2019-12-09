@@ -29,9 +29,15 @@ app.get('/onboard/*', (request, response) => {
             if (!doc.exists) {
                 response.redirect('/?invalid');
             } else {
+                
                 if (!doc.get("shareAnswer")) {
                     const process = doc.get('processed');
                     const gif = doc.get('gifID');
+                    if (!doc.get("firstVisit")){
+                        sessionReference.set({
+                            firstVisit : true
+                        }, {merge : true});
+                    }
                     response.render('onboarding', { id: sessionID, gifID: gif, processed: process });
                 } else {
                     response.redirect("/share/" + sessionID);
