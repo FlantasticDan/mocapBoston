@@ -2,6 +2,7 @@ import tkinter as tk
 import os
 import sys
 import time
+import math
 import pickle
 import threading
 import concurrent.futures
@@ -14,7 +15,7 @@ from firebase_admin import firestore
 from firebase_admin import storage
 
 STORAGE = r"F:\mocapMath\Sandbox\rpi"
-HOSTS = ["blueTriangle", "greenTriangle", "redY"]
+HOSTS = ["blueTriangle", "greenTriangle"]
 
 # Use a service account
 cred = credentials.Certificate('secret/raspberryPi.json')
@@ -109,6 +110,10 @@ class camera:
             with open(os.path.join(self.cameraPath, "world.camera"), "rb") as data:
                 self.position, self.rotation = pickle.load(data)
             self.world = True
+
+            print(cameraName)
+            print(self.position)
+            print(self.rotation)
         else:
             self.world = False
 
@@ -140,16 +145,16 @@ class camera:
             self.moveWorldFile()
         
         self.position = position
-        self.rotation = rotation
+        self.rotation = (rotation[0] + math.pi, rotation[1], rotation[2])
 
         with open(os.path.join(self.cameraPath, "world.camera"), "wb") as data:
-            payload = (position, rotation)
+            payload = (self.position, self.rotation)
             pickle.dump(payload, data)
         
         self.world = True
         print("\n{} World Calibration:".format(self.cameraName))
-        print("Position: {}".format(position))
-        print("Rotation: {}\n".format(rotation))
+        print("Position: {}".format(self.position))
+        print("Rotation: {}\n".format(self.rotation))
     
     def getProperties(self):
         return (self.position[0], self.position[1], self.position[2], self.rotation[0], self.rotation[1], self.rotation[2], self.fov[0], self.fov[1])
