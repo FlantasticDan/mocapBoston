@@ -173,7 +173,7 @@ def findCenter(a, b, c, d):
         return None
  
 # Check for Square
-def isSquare(shape, minPerimeter=150):
+def isSquare(shape, minPerimeter=0):
     """Returns the corners and center of a sqaure-like contour or false if not square-like."""
     peri = cv2.arcLength(shape, True)
     corners = cv2.approxPolyDP(shape, 0.02 * peri, True)
