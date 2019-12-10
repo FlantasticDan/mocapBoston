@@ -241,8 +241,7 @@ def solveCamera(cameraMatrix, distortion, imagePoints, objectPoints):
         position: Camera's world translation coordinates.
         rotation: Camera's world rotation as Euler angles.
     """
-    _, rotVector, transVector, inliers = cv2.solvePnPRansac(objectPoints, imagePoints,
-                                                            cameraMatrix, distortion)
+    _, rotVector, transVector = cv2.solvePnP(objectPoints, imagePoints, cameraMatrix, distortion)
 
     rotMatrix = cv2.Rodrigues(rotVector)[0]
     position = -1 * np.matrix(rotMatrix).T * np.matrix(transVector)
